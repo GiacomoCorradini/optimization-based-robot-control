@@ -43,7 +43,7 @@ You should see a new window appearing, displaying a robot moving somewhat random
 Configure the italian keyboard layout by adding the following lines to your file ~/.bashrc
 
 ```
-setxkbmap -model pc105 -layout it,us -variant nodeadkeys
+setxkbmap -model pc105 -layout it -option basic
 ```
 
 Check if the set went fine by typing from terminal
@@ -57,6 +57,15 @@ You should see something like this:
 ```
 rules:      evdev
 model:      pc105
-layout:     it,us
-variant:    nodeadkeys
+layout:     it
+variant:    basic
 ```
+
+# If you are using spyder3 (via wsl2)
+
+The obtain the following symbol the correct combination is:
+
+* @ = alt + altgr + ò
+* \# = alt + altgr + (release alt) + à
+* [] = alt + altgr + è
+* {} = alt + altgr + 7
