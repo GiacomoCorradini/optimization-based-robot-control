@@ -18,6 +18,10 @@ sudo apt install robotpkg-py38-pinocchio robotpkg-py38-example-robot-data robotp
 
 Configure the environment variables by adding the following lines to your file ~/.bashrc
 
+To add the following command you can use the nano editor or the gedit editor:
+* nano ~/.bashrc
+* gedit ~/.bashrc
+
 ```
 export PATH=/opt/openrobots/bin:$PATH
 export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -34,7 +38,7 @@ where <folder_containing_orc> is the folder containing the "orc" folder, which i
 You can check whether the installation went fine by trying to run this python script.
 
 ```
-python3 test_software.py"
+python3 test_software.py
 ```
 You should see a new window appearing, displaying a robot moving somewhat randomly.
 
@@ -42,8 +46,12 @@ You should see a new window appearing, displaying a robot moving somewhat random
 
 Configure the italian keyboard layout by adding the following lines to your file ~/.bashrc
 
+To add the following command you can use the nano editor or the gedit editor:
+* nano ~/.bashrc
+* gedit ~/.bashrc
+
 ```
-setxkbmap -model pc105 -layout it -option basic
+setxkbmap -model pc105 -layout it,us -variant winkeys, -option
 ```
 
 Check if the set went fine by typing from terminal
