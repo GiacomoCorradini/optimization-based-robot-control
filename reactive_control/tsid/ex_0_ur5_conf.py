@@ -26,7 +26,8 @@ w_torque_bounds = 1.0           # weight of the torque bounds
 w_joint_bounds = 1.0
 
 kp_ee = 5.0                   # proportional gain of end-effector constraint
-kp_posture = 1.0               # proportional gain of joint posture task
+# In order to have a better control we have to increase the gain of the proportional gain
+kp_posture = 10.0               # proportional gain of joint posture task
 
 tau_max_scaling = 0.4           # scaling factor of torque bounds
 v_max_scaling = 0.4
