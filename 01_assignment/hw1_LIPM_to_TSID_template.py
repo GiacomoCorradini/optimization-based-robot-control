@@ -15,24 +15,31 @@ import hw1_conf as conf
 # x0, x1 are points defined in x,y coordinate
 def compute_3rd_order_poly_traj(x0, x1, T, dt):
     N = int(T / dt)
-    x = np.zeros((1,N+1))
-    dx = np.zeros((1,N+1))
-    ddx = np.zeros((1,N+1))
+    x = np.zeros((np.size(x0),N))
+    dx = np.zeros((np.size(x0),N))
+    ddx = np.zeros((np.size(x0),N))
+    # no 
+    a = np.zeros(np.size(x0))
+    b = np.zeros(np.size(x0))
+    c = np.zeros(np.size(x0))
+    d = np.zeros(np.size(x0))
     # Trajectory: x(t) = a + b*t + c*t^2 + d*t^3; 
     # Find the coefficients a,b,c,d
-    a = x0
-    b = 0
-    c = -(3*(x0 - x1))/(2*T**2)
-    d = (x0 - x1)/(2*T**3)
-    # Calculate trajectory x 
-    for t in np.array([0, N + 1]):
-        x[0,t] = a + b*(dt*t) + c*(dt*t)**2 + d*(dt*t)**3
-    # Calculate velocity dx
-    for t in np.arange(0, N + 1):
-        dx[0,t] = b + 2*c*dt + 3*d*dt**2
-    # Calculate acceleration ddx
-    for t in np.arange(0, N + 1):
-        ddx[0,t] = 2*c + 6*d*dt
+    for i in np.arange(0, np.size(x0)):
+        a[i] = x0[i]
+        b[i] = 0
+        c[i] = -(3*(x0[i] - x1[i]))/(2*T**2)
+        d[i] = (x0[i] - x1[i])/(2*T**3)
+    for k in np.arange(0, np.size(x0)):
+        # Calculate trajectory x 
+        for t in np.arange(0, N):
+            x[k,t] = a[k] + b[k]*(dt*t) + c[k]*(dt*t)**2 + d[k]*(dt*t)**3
+        # Calculate velocity dx
+        for t in np.arange(0, N):
+            dx[k,t] = b[k] + 2*c[k]*dt + 3*d[k]*dt**2
+        # Calculate acceleration ddx
+        for t in np.arange(0, N):
+            ddx[k,t] = 2*c[k] + 6*d[k]*dt
     return x, dx, ddx
 
 def compute_foot_traj(foot_steps, N, dt, step_time, step_height, first_phase):
