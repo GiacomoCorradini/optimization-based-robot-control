@@ -28,8 +28,8 @@ def compute_3rd_order_poly_traj(x0, x1, T, dt):
     for i in np.arange(0, np.size(x0)):
         a[i] = x0[i]
         b[i] = 0
-        c[i] = -(3*(x0[i] - x1[i]))/(2*T**2)
-        d[i] = (x0[i] - x1[i])/(2*T**3)
+        c[i] = -(3*(x0[i] - x1[i]))/(T**2)
+        d[i] = 2*(x0[i] - x1[i])/(T**3)
     for k in np.arange(0, np.size(x0)):
         # Calculate trajectory x 
         for t in np.arange(0, N):
