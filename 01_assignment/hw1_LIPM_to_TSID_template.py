@@ -14,11 +14,11 @@ import hw1_conf as conf
 #------- Implement the 3rd order interpolating function here below -------
 # x0, x1 are points defined in x,y coordinate
 def compute_3rd_order_poly_traj(x0, x1, T, dt):
+    # Definition of the variables
     N = int(T / dt)
     x = np.zeros((np.size(x0),N))
     dx = np.zeros((np.size(x0),N))
     ddx = np.zeros((np.size(x0),N))
-    # no 
     a = np.zeros(np.size(x0))
     b = np.zeros(np.size(x0))
     c = np.zeros(np.size(x0))
