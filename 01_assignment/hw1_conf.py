@@ -69,7 +69,7 @@ w_posture = 3e0                 # weight of joint posture task
 
 if SQUAT:
     w_squat = 10                # weight of squat task
-              #150
+              #150 task 2
 else:
     w_squat = 0                 # weight of squat task
 
@@ -90,7 +90,8 @@ if PUSH:
     kp_squat = 100.0            # proportional gain of squat task
 else:
     kp_com = 10.0              # proportional gain of center of mass task (ref trajectory)
-    kp_squat = 1000.0            # proportional gain of squat task
+    kp_squat = 10.0            # proportional gain of squat task
+               #250 task 2
 kp_posture = 1.0               # proportional gain of joint posture task
 kp_am = 10.0                   # proportional gain of angular momentum task
 
