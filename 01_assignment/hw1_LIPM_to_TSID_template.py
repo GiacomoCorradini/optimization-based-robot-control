@@ -171,6 +171,7 @@ time_ctrl = np.arange(0, round(N_ctrl*dt_ctrl, 2), dt_ctrl)
 for i in range(3):
     plt.figure()
     plt.plot(time_ctrl, x_RF[i,:-1], label='x RF '+str(i))
+    plt.gca().set_xlabel('Time [s]')
     plt.plot(time_ctrl, x_LF[i,:-1], label='x LF '+str(i))
     plt.legend()
     
