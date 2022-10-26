@@ -16,9 +16,10 @@ LINE_WIDTH = 60
 DATA_FILE_LIPM = 'talos_walking_traj_lipm.npz'
 DATA_FILE_TSID = 'talos_walking_traj_tsid.npz'
 
-PUSH = 1                                               # Flag to activate CoM push @ half walk
-push_robot_com_vel = [0.1,0.,0.]                       # CoM velocity push
-SQUAT = 1                                              # Flag to activate squat task
+PUSH = 0                                               # Flag to activate CoM push @ half walk
+push_robot_com_vel = [0.,0.,-0.5]                       # CoM velocity push
+                     # [0.1,0.,0.] initial
+SQUAT = 0                                              # Flag to activate squat task
 squat_height = 0.65                                    # desired CoM height while squatting
 
 # robot parameters
@@ -63,13 +64,17 @@ dt = 0.002                      # controller time step
 T_pre  = 1.5                    # simulation time before starting to walk
 T_post = 0                      # simulation time after walking
 
-w_com = 3e1                     # weight of center of mass task (ref trajectory)
-w_foot = 4e1                    # weight of the foot motion task
-w_posture = 3e0                 # weight of joint posture task
+w_com = 7e0                     # weight of center of mass task (ref trajectory)
+        # 3e1 general
+w_foot = 1e0                    # weight of the foot motion task
+        # 4e1 general
+w_posture = 1e0                 # weight of joint posture task
+        # 3e0 general
 
 if SQUAT:
     w_squat = 10                # weight of squat task
-              #150 task 2
+              # 10 initial
+              # 150 task 2
 else:
     w_squat = 0                 # weight of squat task
 
@@ -87,11 +92,12 @@ kp_contact = 10.0               # proportional gain of contact constraint
 kp_foot = 10.0                  # proportional gain of contact constraint
 if PUSH:
     kp_com = 100.0              # proportional gain of center of mass task (ref trajectory)
-    kp_squat = 100.0            # proportional gain of squat task
+    kp_squat = 1000.0            # proportional gain of squat task
 else:
     kp_com = 10.0              # proportional gain of center of mass task (ref trajectory)
     kp_squat = 10.0            # proportional gain of squat task
-               #250 task 2
+               # 10 initial
+               # 250 task 2
 kp_posture = 1.0               # proportional gain of joint posture task
 kp_am = 10.0                   # proportional gain of angular momentum task
 
