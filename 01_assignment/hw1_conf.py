@@ -16,11 +16,11 @@ LINE_WIDTH = 60
 DATA_FILE_LIPM = 'talos_walking_traj_lipm.npz'
 DATA_FILE_TSID = 'talos_walking_traj_tsid.npz'
 
-PUSH = 0                                               # Flag to activate CoM push @ half walk
-push_robot_com_vel = [0.1,0.,0.]                       # CoM velocity push
+PUSH = 1                                               # Flag to activate CoM push @ half walk
+push_robot_com_vel = [0.,0.,-0.5]                       # CoM velocity push
                      # [0.1,0.,0.] initial
                      # [0.,0.,-0.5] task 4
-SQUAT = 0                                            # Flag to activate squat task
+SQUAT = 1                                            # Flag to activate squat task
 squat_height = 0.65                                    # desired CoM height while squatting
 
 # robot parameters
@@ -71,7 +71,7 @@ w_com = 3e1                     # weight of center of mass task (ref trajectory)
 w_foot = 4e1                    # weight of the foot motion task
         # 4e1 general
         # 1e2 task 4 to not fall in the 2nd sim
-w_posture = 5e1                 # weight of joint posture task
+w_posture = 3e0                 # weight of joint posture task
         # 3e0 general
         # 5e1 task 4 to not fall in the 2nd sim
 
@@ -96,7 +96,7 @@ kp_contact = 10.0               # proportional gain of contact constraint
 kp_foot = 10.0                  # proportional gain of contact constraint
 if PUSH:
     kp_com = 100.0              # proportional gain of center of mass task (ref trajectory)
-    kp_squat = 100.0            # proportional gain of squat task
+    kp_squat = 1000.0            # proportional gain of squat task
                # 100 initial
                # 1000 task 4
 else:
