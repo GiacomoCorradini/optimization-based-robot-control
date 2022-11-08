@@ -77,7 +77,6 @@ elif(system=='ur-lab'):
 #                             ('wrist_2_joint', 'shoulder_pan_joint', 0.15),
 #                             ('forearm_link_end_fixed_joint', 'shoulder_pan_joint', 0.15)]
     
-    # configurations
     q_home   = np.array([-0.32932, -0.77775, -2.5674, -1.6349, -1.57867, -1.00179])  # initial configuration
     q_belt_1 = np.array([0.134582, -2.607235, -0.130109, -1.954317, -1.548532, -0.661044])
     q_table  = np.array([-0.176686, -1.049217, -1.886168, -1.754567, -1.522096, -1.082379])

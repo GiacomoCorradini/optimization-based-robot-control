@@ -26,26 +26,20 @@ class Integrator:
             - N: the number of time steps
             - scheme: the name of the integration scheme to use
         '''
-        # prepare the quantity to compute
         n = x_init.shape[0]
         t = np.zeros((N*ndt+1))*np.nan
         x = np.zeros((N*ndt+1,n))*np.nan
         dx = np.zeros((N*ndt,n))*np.nan
         h = dt/ndt  # inner time step
-        # initialize x and t
         x[0,:] = x_init
         t[0] = t_init
         
-        # loop
         for i in range(x.shape[0]-1):
-            # index used for accessing u
             ii = int(np.floor(i/ndt))
-            # update the time
             t[i+1] = t[i] + h
 
-            # integration methods
-            if(scheme=='RK-1'):
-                x[i+1,:], dx[i,:] = sol.rk1(x[i,:], h, U[ii,:], t[i], ode)
+            if(scheme=='RK-1'):            
+                x[i+1,:], dx[i,:] = sol.rk1(x[i,:], h, U[ii,:], t[i], ode)    
             elif(scheme=='RK-2'):   # explicit midpoint method
                 x[i+1,:], dx[i,:] = sol.rk2(x[i,:], h, U[ii,:], t[i], ode)
             elif(scheme=='RK-2-Heun'):
@@ -58,10 +52,10 @@ class Integrator:
                 x[i+1,:], dx[i,:] = sol.implicit_euler(x[i,:], h, U[ii,:], t[i], ode)
             elif(scheme=='SemiImpEul'):
                 x[i+1,:], dx[i,:] = sol.semi_implicit_euler(x[i,:], h, U[ii,:], t[i], ode)
-
+            
         self.dx = dx
         self.t = t
-        self.x = x
+        self.x = x        
         return x[::ndt,:]
         
         
@@ -158,11 +152,11 @@ if __name__=='__main__':
     # choose the number of inner steps so that the number of function evaluations
     # is the same for every method
     integrators = []
-    integrators += [{'scheme': 'RK-1',      'ndt': 1000}]    # used as ground truth
+    integrators += [{'scheme': 'RK-4',      'ndt': 1000}]    # used as ground truth
     integrators += [{'scheme': 'RK-1',      'ndt': 12}]
     integrators += [{'scheme': 'RK-2',      'ndt': 6}]
     integrators += [{'scheme': 'RK-3',      'ndt': 4}]
-    #integrators += [{'scheme': 'RK-4',      'ndt': 3}]
+    integrators += [{'scheme': 'RK-4',      'ndt': 3}]
     
         
     if(system=='ur'):

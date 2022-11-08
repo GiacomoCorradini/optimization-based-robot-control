@@ -27,15 +27,14 @@ class SingleShootingProblem:
         self.dt = dt
         self.N = N
         self.integration_scheme = integration_scheme
-        # visualize the robot in the viewer
         self.simu = simu
-
+        
         self.nq = int(x0.shape[0]/2)
         self.nx = x0.shape[0]
         self.nu = self.ode.nu
         self.X = np.zeros((N+1, self.x0.shape[0]))
         self.U = np.zeros((N, self.nu))
-
+        
         self.last_X_displayed = np.copy(self.X)
         self.last_values = Empty()
         self.last_values.cost = 0.0
@@ -45,7 +44,6 @@ class SingleShootingProblem:
         
         self.history = Empty()
     
-        # create 5 empty list
         self.running_costs = []
         self.final_costs = []
         self.path_ineqs = []
@@ -91,7 +89,7 @@ class SingleShootingProblem:
         # reset the variables storing the costs
         for (w,c) in self.running_costs:
             self.last_values.__dict__[c.name] = 0.0
-
+            
         for i in range(U.shape[0]):
             for (w,c) in self.running_costs:
                 tmp = w * self.dt * c.compute(X[i,:], U[i,:], t, recompute=True)
@@ -99,14 +97,14 @@ class SingleShootingProblem:
                 self.last_values.__dict__[c.name] += tmp
             t += self.dt
         return cost
-
+        
     def running_cost_w_gradient(self, X, U, dXdU):
         ''' Compute the running cost integral and its gradient w.r.t. U'''
         cost = 0.0
         grad = np.zeros(self.N*self.nu)
         t = 0.0
         nx, nu = self.nx, self.nu
-
+        
         # reset the variables storing the costs
         for (w,c) in self.running_costs:
             self.last_values.__dict__[c.name] = 0.0
@@ -173,7 +171,8 @@ class SingleShootingProblem:
         self.last_values.running_cost = run_cost
         self.last_values.final_cost = fin_cost
         return cost
-
+        
+    
     def compute_cost_w_gradient_fd(self, y):
         ''' Compute both the cost function and its gradient using finite differences '''
         if(np.any(np.isnan(y))):
@@ -190,7 +189,8 @@ class SingleShootingProblem:
         self.last_values.cost = cost
         self.last_values.grad = norm(grad)
         return (cost, grad)
-
+        
+    
     def compute_cost_w_gradient(self, y):
         ''' Compute cost function and its gradient '''
         if(np.any(np.isnan(y))):
@@ -211,7 +211,7 @@ class SingleShootingProblem:
             sys.exit()
         if(np.any(np.isnan(dXdU))):
             print(colored("\t[Compute cost] The sensitivities (dXdU) contain NaN!", "red"))
-
+        
         # compute cost
         (run_cost, grad_run) = self.running_cost_w_gradient(X, U, dXdU)
         (fin_cost, grad_fin) = self.final_cost_w_gradient(X[-1,:], dXdU[-self.nx:,:])
@@ -423,13 +423,10 @@ class SingleShootingProblem:
         self.X, self.U = X, U
         self.last_values.ineq = fin_eq
         return jac_fin
-
+        
+        
     def solve(self, y0=None, method='SLSQP', use_finite_diff=False, max_iter=300):
-        '''
-            Solve the optimal control problem 
-            - y0: initial guess
-            - method: SLSQP always
-        '''
+        ''' Solve the optimal control problem '''
         self.history.cost = []
         self.history.grad = []
         

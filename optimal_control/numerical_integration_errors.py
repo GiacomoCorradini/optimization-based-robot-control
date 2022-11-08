@@ -32,18 +32,18 @@ if __name__=='__main__':
     PLOT_STUFF = 1
     linestyles = ['-*', '--*', ':*', '-.*']
     # choose which system you want to integrate
-#    system = 'ur'
+    system = 'ur'
 #    system='double-pendulum'
 #    system='pendulum-ode'
 #    system = 'linear'
 #    system = 'sin'
-    system = 'stiff-diehl'
+#    system = 'stiff-diehl'
     
     integrators = []
     integrators += [{'scheme': 'RK-1'      , 'nf': 1}]
-    integrators += [{'scheme': 'RK-2'      , 'nf': 2}] # nf = number of function evaluations per step
+    integrators += [{'scheme': 'RK-2'      , 'nf': 2}] # nf = number of function evaluation per step
     integrators += [{'scheme': 'RK-3'      , 'nf': 3}]
-    #integrators += [{'scheme': 'RK-4'      , 'nf': 4}]
+    integrators += [{'scheme': 'RK-4'      , 'nf': 4}]
     
     
     
@@ -89,7 +89,7 @@ if __name__=='__main__':
     integrator = Integrator('integrator')
     
     print('Compute ground truth')
-    x_gt = integrator.integrate(ode, x0, U, 0.0, dt, ndt_ground_truth, N, 'RK-3')
+    x_gt = integrator.integrate(ode, x0, U, 0.0, dt, ndt_ground_truth, N, 'RK-4')
     
     for params in integrators:
         scheme = params['scheme']

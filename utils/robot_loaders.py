@@ -3,7 +3,7 @@
 """
 Created on Thu Feb 13 07:09:47 2020
 
-@author: student
+@author: Andrea Del Prete (andrea.delprete@unitn.it)
 """
 import sys
 import os
@@ -15,21 +15,31 @@ from pinocchio.robot_wrapper import RobotWrapper
 from example_robot_data.robots_loader import getModelPath, readParamsFromSrdf
 
 def loadURlab():
-    LOCOSIM_PATH = "/home/student/ros_ws/src/locosim"
-#    URDF = LOCOSIM_PATH+"/robot_urdf/ur5.urdf"
-    URDF = LOCOSIM_PATH+"/ur_description/urdf/ur5.urdf"
-    modelPath = '/opt/openrobots/share/'
-    robot = RobotWrapper.BuildFromURDF(URDF, [modelPath])
+    try:
+        LOCOSIM_PATH = os.environ.get('LOCOSIM_DIR')
+    except:
+        print("Warning: could not find environment variable LOCOSIM_DIR. Using default path: /home/student/ros_ws/src/locosim")
+        LOCOSIM_PATH = "/home/student/ros_ws/src/locosim"
+    URDF = LOCOSIM_PATH + "/robot_descriptions/ur_description/urdf/ur5.urdf"
+    # modelPath = '/opt/openrobots/share/'
+    modelPath = '/opt/openrobots/share/example-robot-data/robots/'
+    # gripperPath = LOCOSIM_PATH+'/robot_descriptions/gripper_description/'
+    gripperPath = LOCOSIM_PATH + '/robot_descriptions/'
+    print('SEARCH')
+    print('1 -', URDF)
+    print('2 -', modelPath)
+    print('3 -', gripperPath)
+    robot = RobotWrapper.BuildFromURDF(URDF, [modelPath, gripperPath])
     robot.model.addBodyFrame("gripper", 6, pin.SE3(np.eye(3), np.array([0.0, 0.0, 0.18])), 28)
     
     return robot
 
 def loadUR(robotNum=5, limited=False, gripper=False, URDF_FILENAME='', path=''):
-    assert (not (gripper and (robot == 10 or limited)))
+    assert (not (gripper and (robotNum == 10 or limited)))
     try:
         # first try to load model located in folder specified by env variable UR5_MODEL_DIR
-        ERROR_MSG = 'You should set the environment variable UR5_MODEL_DIR to something like "$DEVEL_DIR/install/share"\n';
-        path      = os.environ.get('UR5_MODEL_DIR', ERROR_MSG)
+#        ERROR_MSG = 'You should set the environment variable UR5_MODEL_DIR to something like "$DEVEL_DIR/install/share"\n';
+        path      = os.environ.get('UR5_MODEL_DIR') #, ERROR_MSG)
         urdf      = path + "/ur_description/urdf/ur5_robot.urdf";
         robot = RobotWrapper.BuildFromURDF(urdf, [path, ])
         try:
@@ -49,6 +59,9 @@ def loadUR_urdf(robot=5, limited=False, gripper=False):
     URDF_FILENAME = "ur%i%s_%s.urdf" % (robot, "_joint_limited" if limited else '', 'gripper' if gripper else 'robot')
     URDF_SUBPATH = "/ur_description/urdf/" + URDF_FILENAME
     modelPath = getModelPath(URDF_SUBPATH)
+    # print('SEARCH IN')
+    # print(modelPath, '----', URDF_SUBPATH)
+    # print('/opt/openrobots/share/')
     try:        
         path = '/opt/openrobots/share/'
         model = RobotWrapper.BuildFromURDF(modelPath + URDF_SUBPATH, [path])

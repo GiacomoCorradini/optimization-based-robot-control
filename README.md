@@ -29,6 +29,7 @@ export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH
 export ROS_PACKAGE_PATH=/opt/openrobots/share
 export PYTHONPATH=$PYTHONPATH:/opt/openrobots/lib/python3.8/site-packages
 export PYTHONPATH=$PYTHONPATH:<folder_containing_orc>
+export LOCOSIM_DIR=$HOME/orc/<folder_containing_locosim>/locosim
 ```
 
 where <folder_containing_orc> is the folder containing the "orc" folder, which in turns contains all the python code of this class.

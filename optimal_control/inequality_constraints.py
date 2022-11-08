@@ -8,7 +8,7 @@ Created on Wed Mar 18 18:12:04 2020
 import numpy as np
 from numpy.linalg import norm
 import pinocchio as pin
-
+        
 
 class OCPFinalPlaneCollisionAvoidance:
     ''' Path inequality constraint for collision avoidance with a frame of the robot
