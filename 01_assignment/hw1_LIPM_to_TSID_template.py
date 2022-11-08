@@ -36,10 +36,10 @@ def compute_3rd_order_poly_traj(x0, x1, T, dt):
             x[k,t] = a[k] + b[k]*(dt*t) + c[k]*(dt*t)**2 + d[k]*(dt*t)**3
         # Calculate velocity dx
         for t in np.arange(0, N):
-            dx[k,t] = b[k] + 2*c[k]*dt + 3*d[k]*dt**2
+            dx[k,t] = b[k] + 2*c[k]*(dt*t) + 3*d[k]*(dt*t)**2
         # Calculate acceleration ddx
         for t in np.arange(0, N):
-            ddx[k,t] = 2*c[k] + 6*d[k]*dt
+            ddx[k,t] = 2*c[k] + 6*d[k]*(dt*t)
     return x, dx, ddx
 
 def compute_foot_traj(foot_steps, N, dt, step_time, step_height, first_phase):
