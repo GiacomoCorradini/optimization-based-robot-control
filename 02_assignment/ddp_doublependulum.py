@@ -44,10 +44,10 @@ class DDPSolverLinearDyn(DDPSolver):
         cost = 0.5*np.dot(x, np.dot(self.H_xx[i,:,:], x)) \
                 + np.dot(self.h_x[i,:].T, x) + self.h_s[i] \
                 + 0.5*self.lmbda*np.dot(u.T, u) \
-                + 0.5*self.underact*np.dot(np.dot(np.array([[0,0],[0,1]]),u).T,np.dot(np.array([[0,0],[0,1]]),u)) 
+                + 0.5*self.underact*np.dot(np.dot(np.array([[0,0],[0,1]]),u).T,np.dot(np.array([[0,0],[0,1]]),u))
         if self.CONTROL_BOUNDS:
             barr = -self.beta*np.log(self.max_torque+self.eps+u)-self.beta*np.log(self.max_torque+self.eps-u)
-            cost += 0.5*self.w_bounds*np.dot(barr.T,barr)         
+            cost += 0.5*self.w_bounds*np.dot(barr.T,barr)
         return cost
         
     def cost_final(self, x):

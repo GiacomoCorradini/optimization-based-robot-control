@@ -3,7 +3,7 @@
 
 @author: adelpret
 """
-
+ 
 import numpy as np
 from ddp import DDPSolver
 import pinocchio as pin
@@ -44,8 +44,12 @@ class DDPSolverLinearDyn(DDPSolver):
         cost = 0.5*np.dot(x, np.dot(self.H_xx[i,:,:], x)) \
                 + np.dot(self.h_x[i,:].T, x) + self.h_s[i] \
                 + 0.5*self.lmbda*np.dot(u.T, u) \
+                + 0.5*self.underact*np.dot(np.dot(np.array([[0,0],[0,1]]),u).T,np.dot(np.array([[0,0],[0,1]]),u))
                 # + ... add here the running cost term for taking into account the underactuation
+                # the cost is imposed in the second joint since we simulate a fictitious motor in that joint to take into account the underactuation, the .T in numpy means the transpose
         if self.CONTROL_BOUNDS:
+           # bounds = 
+           # cost += 0.5*self.w_bounds*np.dot(bounds.T,bounds)
             # ... implement here the running cost term for taking into the control limits
         return cost
         
@@ -68,7 +72,9 @@ class DDPSolverLinearDyn(DDPSolver):
     def cost_running_u(self, i, x, u):
         ''' Gradient of the running cost w.r.t. u '''
         c_u = self.lmbda * u \
-        # + ... add here the derivative w.r.t u of the running cost term for taking into account the underactuation                            
+            + self.underact*np.array([0,u[1]])
+        # + ... add here the derivative w.r.t u of the running cost term for taking into account the underactuation
+        
         if self.CONTROL_BOUNDS:
             # ... implement here the derivative w.r.t u of the running cost term for taking into the control limits
         return c_u
@@ -84,6 +90,7 @@ class DDPSolverLinearDyn(DDPSolver):
     def cost_running_uu(self, i, x, u):
         ''' Hessian of the running cost w.r.t. u '''
         c_uu = self.lmbda * np.eye(self.nu) \
+            + self.underact*np.array([0,0],[0,1])
         # + ... add here the second derivative w.r.t u of the running cost term for taking into account the underactuation
         if self.CONTROL_BOUNDS:
             # ... implement here the second derivative w.r.t u of the running cost term for taking into the control limits
@@ -283,7 +290,7 @@ if __name__=='__main__':
     tau_g = robot.nle(conf.q0, np.zeros(robot.nv))
     for i in range(N):
         U_bar[i,:] = tau_g
-    
+     
     ''' TASK FUNCTION  '''
     lmbda = 2e1                                                     # control regularization
     if conf.TORQUE_LIMITS:
