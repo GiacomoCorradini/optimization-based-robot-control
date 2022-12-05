@@ -80,7 +80,7 @@ class DDPSolverLinearDyn(DDPSolver):
     def cost_running_xx(self, i, x, u):
         ''' Hessian of the running cost w.r.t. x '''
         return self.H_xx[i,:,:]
-        
+
     def cost_final_xx(self, x):
         ''' Hessian of the final cost w.r.t. x '''
         return self.H_xx[-1,:,:]
@@ -93,7 +93,7 @@ class DDPSolverLinearDyn(DDPSolver):
         #if self.CONTROL_BOUNDS:
             # ... implement here the second derivative w.r.t u of the running cost term for taking into the control limits
         return c_uu
-        
+
     def cost_running_xu(self, i, x, u):
         ''' Hessian of the running cost w.r.t. x and then w.r.t. u '''
         return np.zeros((self.nx, self.nu))
