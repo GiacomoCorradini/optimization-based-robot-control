@@ -47,9 +47,7 @@ class DDPSolverLinearDyn(DDPSolver):
                 + 0.5*self.underact*np.dot(np.dot(np.array([[0,0],[0,1]]),u).T,np.dot(np.array([[0,0],[0,1]]),u))
                 # + ... add here the running cost term for taking into account the underactuation
                 # the cost is imposed in the second joint since we simulate a fictitious motor in that joint to take into account the underactuation, the .T in numpy means the transpose
-        if self.CONTROL_BOUNDS:
-           # bounds = 
-           # cost += 0.5*self.w_bounds*np.dot(bounds.T,bounds)
+        #if self.CONTROL_BOUNDS:
             # ... implement here the running cost term for taking into the control limits
         return cost
         
@@ -75,7 +73,7 @@ class DDPSolverLinearDyn(DDPSolver):
             + self.underact*np.array([0,u[1]])
         # + ... add here the derivative w.r.t u of the running cost term for taking into account the underactuation
         
-        if self.CONTROL_BOUNDS:
+        #if self.CONTROL_BOUNDS:
             # ... implement here the derivative w.r.t u of the running cost term for taking into the control limits
         return c_u
         
@@ -90,9 +88,9 @@ class DDPSolverLinearDyn(DDPSolver):
     def cost_running_uu(self, i, x, u):
         ''' Hessian of the running cost w.r.t. u '''
         c_uu = self.lmbda * np.eye(self.nu) \
-            + self.underact*np.array([0,0],[0,1])
+            + self.underact*np.array([[0,0],[0,1]])
         # + ... add here the second derivative w.r.t u of the running cost term for taking into account the underactuation
-        if self.CONTROL_BOUNDS:
+        #if self.CONTROL_BOUNDS:
             # ... implement here the second derivative w.r.t u of the running cost term for taking into the control limits
         return c_uu
         
