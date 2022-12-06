@@ -12,8 +12,18 @@ sudo sh -c "echo 'deb [arch=amd64] http://robotpkg.openrobots.org/wip/packages/d
 curl http://robotpkg.openrobots.org/packages/debian/robotpkg.key | sudo apt-key add -
 
 sudo apt-get update
+```
 
+If you are using Ubuntu 20.04 run:
+
+```
 sudo apt install robotpkg-py38-pinocchio robotpkg-py38-example-robot-data robotpkg-urdfdom robotpkg-py38-qt5-gepetto-viewer-corba robotpkg-py38-quadprog robotpkg-py38-tsid
+```
+
+If you are using Ubuntu 22.04 run:
+
+```
+sudo apt install robotpkg-py310-pinocchio robotpkg-py310-example-robot-data robotpkg-urdfdom robotpkg-py310-qt5-gepetto-viewer-corba robotpkg-py310-quadprog robotpkg-py310-tsid
 ```
 
 Configure the environment variables by adding the following lines to your file ~/.bashrc
@@ -42,39 +52,3 @@ You can check whether the installation went fine by trying to run this python sc
 python3 test_software.py
 ```
 You should see a new window appearing, displaying a robot moving somewhat randomly.
-
-# Set the italian keyboard layout in wsl2
-
-Configure the italian keyboard layout by adding the following lines to your file ~/.bashrc
-
-To add the following command you can use the nano editor or the gedit editor:
-* nano ~/.bashrc
-* gedit ~/.bashrc
-
-```
-setxkbmap -model pc105 -layout it,us -variant winkeys, -option
-```
-
-Check if the set went fine by typing from terminal
-
-```
-setxkbmap -query
-```
- 
-You should see something like this:
-
-```
-rules:      evdev
-model:      pc105
-layout:     it
-variant:    basic
-```
-
-# If you are using spyder3 (via wsl2)
-
-The obtain the following symbol the correct combination is:
-
-* @ = alt + altgr + ò
-* \# = alt + altgr + (release alt) + à
-* [] = alt + altgr + è
-* {} = alt + altgr + 7

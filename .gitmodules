@@ -1,0 +1,6 @@
+[submodule "locosim"]
+	path = locosim
+	url = https://github.com/mfocchi/locosim.git
+[submodule "geometry2"]
+	path = geometry2
+	url = https://github.com/BadgerTechnologies/geometry2.git
