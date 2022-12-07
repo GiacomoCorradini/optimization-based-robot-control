@@ -3,7 +3,7 @@
 
 @author: adelpret
 """
- 
+
 import numpy as np
 from ddp import DDPSolver
 import pinocchio as pin
@@ -137,7 +137,7 @@ class DDPSolverDoublePendulum(DDPSolverLinearDyn):
         data = self.robot.data
         q = x[:nq]
         v = x[nq:]
-        ddq = pin.aba(model, data, q, v, u)     
+        ddq = pin.aba(model, data, q, v, u)
         self.dx[nv:] = ddq
         v_mean = v + 0.5*self.dt*ddq
         self.dx[:nv] = v_mean
@@ -224,7 +224,8 @@ class DDPSolverDoublePendulum(DDPSolverLinearDyn):
             else:
                 U_sim[i,:] = U_bar[i,:] - KK[i,:,:] @ (X_sim[i,:]-X_bar[i,:])
             # Needed when using the penalty method for taking into account underactuation
-            U_sim[i,1] = 0.0                                                                     
+            U_sim[i,1] = 0.0
+            
             if PUSH and (i == int(N/8) or i == int(N/4) or i == int(N/2) or i == int(3*N/2)):
                 X_sim[i,int(n/2):] += conf.push_vec
             X_sim[i+1,:] = self.f(X_sim[i,:], U_sim[i,:])
@@ -342,18 +343,41 @@ if __name__=='__main__':
     X_sim, U_sim = solver.start_simu(x0, X, U, KK, conf.dt_sim, conf.PUSH, conf.TORQUE_LIMITS)
     time_vec = np.linspace(0.0,conf.N*conf.dt,N+1)
 
-    if conf.PLOT_TORQUES:        
+    if conf.PLOT_TORQUES:
         plt.figure()
         plt.plot(time_vec[:-1], U_sim[:,0], "b")
         plt.plot(time_vec[:-1], U[:,0], "b--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[Nm]')
+        leg = plt.legend(["1st joint torque", "1st joint ref. torque","2nd joint torque", "2nd joint ref. torque"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[25:75], U_sim[25:75,0], "b")
+        plt.plot(time_vec[25:75], U[25:75,0], "b--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[Nm]')
+        leg = plt.legend(["1st joint torque", "1st joint ref. torque","2nd joint torque", "2nd joint ref. torque"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[75:125], U_sim[75:125,0], "b")
+        plt.plot(time_vec[75:125], U[75:125,0], "b--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[Nm]')
+        leg = plt.legend(["1st joint torque", "1st joint ref. torque","2nd joint torque", "2nd joint ref. torque"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[175:225], U_sim[175:225,0], "b")
+        plt.plot(time_vec[175:225], U[175:225,0], "b--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[Nm]')
+        leg = plt.legend(["1st joint torque", "1st joint ref. torque","2nd joint torque", "2nd joint ref. torque"],loc='upper right')
+        #plt.plot(time_vec[:-1], U_sim[:,1], "r")
+        #plt.plot(time_vec[:-1], U[:,1], "r--", alpha=0.8, linewidth=1.5)
         if conf.TORQUE_LIMITS:
             plt.plot(time_vec[:-1], max_torque*np.ones(len(time_vec[:-1])), "k--", alpha=0.8, linewidth=1.5)
             plt.plot(time_vec[:-1], -max_torque*np.ones(len(time_vec[:-1])), "k--", alpha=0.8, linewidth=1.5)
         plt.gca().set_xlabel('Time [s]')
         plt.gca().set_ylabel('[Nm]')
-        leg = plt.legend(["1st joint torque", "1st joint ref. torque"],loc='upper right')
+        leg = plt.legend(["1st joint torque", "1st joint ref. torque","2nd joint torque", "2nd joint ref. torque"],loc='upper right')
     
-    if conf.PLOT_JOINT_POS:        
+    if conf.PLOT_JOINT_POS:
         plt.figure()
         plt.plot(time_vec, X_sim[:,0],'b')
         plt.plot(time_vec, X[:,0],'b--', alpha=0.8, linewidth=1.5)
@@ -362,16 +386,63 @@ if __name__=='__main__':
         plt.gca().set_xlabel('Time [s]')
         plt.gca().set_ylabel('[rad]')
         plt.legend(["1st joint position","1st joint ref. position","2nd joint position","2nd joint ref position"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[25:75], X_sim[25:75,0], "b")
+        plt.plot(time_vec[25:75], X[25:75,0], "b--", alpha=0.8, linewidth=1.5)
+        plt.plot(time_vec[25:75], X_sim[25:75,1], "r")
+        plt.plot(time_vec[25:75], X[25:75,1], "r--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[rad]')
+        plt.legend(["1st joint position","1st joint ref. position","2nd joint position","2nd joint ref position"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[75:125], X_sim[75:125,0], "b")
+        plt.plot(time_vec[75:125], X[75:125,0], "b--", alpha=0.8, linewidth=1.5)
+        plt.plot(time_vec[75:125], X_sim[75:125,1], "r")
+        plt.plot(time_vec[75:125], X[75:125,1], "r--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[rad]')
+        plt.legend(["1st joint position","1st joint ref. position","2nd joint position","2nd joint ref position"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[175:225], X_sim[175:225,0], "b")
+        plt.plot(time_vec[175:225], X[175:225,0], "b--", alpha=0.8, linewidth=1.5)
+        plt.plot(time_vec[175:225], X_sim[175:225,1], "r")
+        plt.plot(time_vec[175:225], X[175:225,1], "r--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[rad]')
+        plt.legend(["1st joint position","1st joint ref. position","2nd joint position","2nd joint ref position"],loc='upper right')
         
-    if conf.PLOT_JOINT_VEL:        
+    if conf.PLOT_JOINT_VEL:
         plt.figure()
         plt.plot(time_vec, X_sim[:,2],'b')
         plt.plot(time_vec, X[:,2],'b--', alpha=0.8, linewidth=1.5)
         plt.plot(time_vec, X_sim[:,3],'r')
         plt.plot(time_vec, X[:,3],'r--', alpha=0.8, linewidth=1.5)
         plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[Nm]')
+        plt.legend(["1st joint velocity","1st joint ref. velocity","2nd joint velocity","2nd joint ref velocity"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[25:75], X_sim[25:75,2], "b")
+        plt.plot(time_vec[25:75], X[25:75,2], "b--", alpha=0.8, linewidth=1.5)
+        plt.plot(time_vec[25:75], X_sim[25:75,3], "r")
+        plt.plot(time_vec[25:75], X[25:75,3], "r--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[Nm]')
+        plt.legend(["1st joint velocity","1st joint ref. velocity","2nd joint velocity","2nd joint ref velocity"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[75:125], X_sim[75:125,2], "b")
+        plt.plot(time_vec[75:125], X[75:125,2], "b--", alpha=0.8, linewidth=1.5)
+        plt.plot(time_vec[75:125], X_sim[75:125,3], "r")
+        plt.plot(time_vec[75:125], X[75:125,3], "r--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
+        plt.gca().set_ylabel('[Nm]')
+        plt.legend(["1st joint velocity","1st joint ref. velocity","2nd joint velocity","2nd joint ref velocity"],loc='upper right')
+        plt.figure()
+        plt.plot(time_vec[175:225], X_sim[175:225,2], "b")
+        plt.plot(time_vec[175:225], X[175:225,2], "b--", alpha=0.8, linewidth=1.5)
+        plt.plot(time_vec[175:225], X_sim[175:225,3], "r")
+        plt.plot(time_vec[175:225], X[175:225,3], "r--", alpha=0.8, linewidth=1.5)
+        plt.gca().set_xlabel('Time [s]')
         plt.gca().set_ylabel('[rad/s]')
         plt.legend(["1st joint velocity","1st joint ref. velocity","2nd joint velocity","2nd joint ref velocity"],loc='upper right')
 
     plt.show()
-
