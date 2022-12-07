@@ -164,7 +164,7 @@ class DDPSolverDoublePendulum(DDPSolverLinearDyn):
             fp = self.f(x, up)
             Fu[:,i] = (fp-f0)/delta
                 
-        return Fu
+        return Fu 
         
     def f_x(self, x, u):
         ''' Partial derivatives of system dynamics w.r.t. x '''
@@ -263,7 +263,7 @@ if __name__=='__main__':
     mu = 10                  # initial regularization
     ddp_params = {}
     ddp_params['alpha_factor'] = 0.5
-    ddp_params['mu_factor'] = 0.
+    ddp_params['mu_factor'] = 10.
     ddp_params['mu_max'] = 1e0
     ddp_params['min_alpha_to_increase_mu'] = 0.1
     ddp_params['min_cost_impr'] = 1e-1
@@ -375,8 +375,8 @@ if __name__=='__main__':
             plt.plot(time_vec[:-1], -max_torque*np.ones(len(time_vec[:-1])), "k--", alpha=0.8, linewidth=1.5)
         plt.gca().set_xlabel('Time [s]')
         plt.gca().set_ylabel('[Nm]')
-        plt.xlim(-0.2,2.2)
-        plt.ylim(-2,2)
+        #plt.xlim(-0.2,2.2)
+        #plt.ylim(-2,2)
         leg = plt.legend(["1st joint torque", "1st joint ref. torque","2nd joint torque", "2nd joint ref. torque"],loc='upper right')
     
     if conf.PLOT_JOINT_POS:
@@ -387,8 +387,8 @@ if __name__=='__main__':
         plt.plot(time_vec, X[:,1],'r--', alpha=0.8, linewidth=1.5)
         plt.gca().set_xlabel('Time [s]')
         plt.gca().set_ylabel('[rad]')
-        plt.xlim(-0.2,2.2)
-        plt.ylim(-1,4.5)
+        #plt.xlim(-0.2,2.2)
+        #plt.ylim(-1,4.5)
         plt.legend(["1st joint position","1st joint ref. position","2nd joint position","2nd joint ref position"],loc='upper right')
         # plt.figure()
         # plt.plot(time_vec[25:75], X_sim[25:75,0], "b")
@@ -423,8 +423,8 @@ if __name__=='__main__':
         plt.plot(time_vec, X[:,3],'r--', alpha=0.8, linewidth=1.5)
         plt.gca().set_xlabel('Time [s]')
         plt.gca().set_ylabel('[Nm]')
-        plt.xlim(-0.2,2.2)
-        plt.ylim(-30,50)
+        #plt.xlim(-0.2,2.2)
+        #plt.ylim(-30,50)
         plt.legend(["1st joint velocity","1st joint ref. velocity","2nd joint velocity","2nd joint ref velocity"],loc='upper right')
         # plt.figure()
         # plt.plot(time_vec[25:75], X_sim[25:75,2], "b")

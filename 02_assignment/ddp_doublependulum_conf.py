@@ -26,7 +26,7 @@ tau_coulomb_max = 0*np.ones(2)   # expressed as percentage of torque max
 randomize_robot_model = 0
 model_variation = 10.0
 
-PUSH = 1                         # flag to activate four pushes on the second joint (instantaneous variation of the second joint velocity) at N/8, N/4, N/2 and 3*N/4 simulation steps
+PUSH = 0                         # flag to activate four pushes on the second joint (instantaneous variation of the second joint velocity) at N/8, N/4, N/2 and 3*N/4 simulation steps
 push_vec = np.array([0,3])       # instantaneous velocy increment of the second joint
 
 SELECTION_MATRIX = 1             # flag to use the selection matrix method
