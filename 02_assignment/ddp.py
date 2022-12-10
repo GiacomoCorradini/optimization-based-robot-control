@@ -84,7 +84,7 @@ def backward_pass(solver, X_bar, U_bar, mu):
             
             if(solver.DEBUG):
                 print("Qbar_uu, Qbar_uu_pinv",a2s(Qbar_uu), a2s(Qbar_uu_pinv))
-                print("kk, KK", a2s(solver.kk[i,ru]), a2s(solver.KK[i,ru,rx]))
+                print("kk, KK", a2s(solver.kk[i,ru]), a2s(solver.KK[i,ru,:]))
                 
             # update Value function
             V_x[i,:]    = (solver.Q_x[i,:] - 
@@ -250,6 +250,7 @@ class DDPSolver:
         cost = self.cost(X, U)
         print("Cost  ", cost)
         print("Effort", np.linalg.norm(U))
+        print("K", np.linalg.norm(KK))
         
     ''' Discrete-time system dynamics '''
     def f(x, u):

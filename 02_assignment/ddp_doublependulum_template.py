@@ -238,6 +238,7 @@ class DDPSolverDoublePendulum(DDPSolverLinearDyn):
         cost = self.cost(X_sim, U_sim)                                          
         print("Cost Sim.", cost)
         print("Effort Sim.", np.linalg.norm(U_sim))
+        print("K", np.linalg.norm(KK))
         return X_sim, U_sim
 
 
@@ -263,7 +264,7 @@ if __name__=='__main__':
     mu = 10                  # initial regularization
     ddp_params = {}
     ddp_params['alpha_factor'] = 0.5
-    ddp_params['mu_factor'] = 0.
+    ddp_params['mu_factor'] = 10.
     ddp_params['mu_max'] = 1e0
     ddp_params['min_alpha_to_increase_mu'] = 0.1
     ddp_params['min_cost_impr'] = 1e-1
@@ -368,8 +369,6 @@ if __name__=='__main__':
         # plt.gca().set_xlabel('Time [s]')
         # plt.gca().set_ylabel('[Nm]')
         # leg = plt.legend(["1st joint torque", "1st joint ref. torque","2nd joint torque", "2nd joint ref. torque"],loc='upper right')
-        #plt.plot(time_vec[:-1], U_sim[:,1], "r")
-        #plt.plot(time_vec[:-1], U[:,1], "r--", alpha=0.8, linewidth=1.5)
         if conf.TORQUE_LIMITS:
             plt.plot(time_vec[:-1], max_torque*np.ones(len(time_vec[:-1])), "k--", alpha=0.8, linewidth=1.5)
             plt.plot(time_vec[:-1], -max_torque*np.ones(len(time_vec[:-1])), "k--", alpha=0.8, linewidth=1.5)
@@ -422,7 +421,7 @@ if __name__=='__main__':
         plt.plot(time_vec, X_sim[:,3],'r')
         plt.plot(time_vec, X[:,3],'r--', alpha=0.8, linewidth=1.5)
         plt.gca().set_xlabel('Time [s]')
-        plt.gca().set_ylabel('[Nm]')
+        plt.gca().set_ylabel('[rad/s]')
         #plt.xlim(-0.2,2.2)
         #plt.ylim(-30,50)
         plt.legend(["1st joint velocity","1st joint ref. velocity","2nd joint velocity","2nd joint ref velocity"],loc='upper right')
@@ -432,7 +431,7 @@ if __name__=='__main__':
         # plt.plot(time_vec[25:75], X_sim[25:75,3], "r")
         # plt.plot(time_vec[25:75], X[25:75,3], "r--", alpha=0.8, linewidth=1.5)
         # plt.gca().set_xlabel('Time [s]')
-        # plt.gca().set_ylabel('[Nm]')
+        # plt.gca().set_ylabel('[rad/s]')
         # plt.legend(["1st joint velocity","1st joint ref. velocity","2nd joint velocity","2nd joint ref velocity"],loc='upper right')
         # plt.figure()
         # plt.plot(time_vec[75:125], X_sim[75:125,2], "b")
@@ -440,7 +439,7 @@ if __name__=='__main__':
         # plt.plot(time_vec[75:125], X_sim[75:125,3], "r")
         # plt.plot(time_vec[75:125], X[75:125,3], "r--", alpha=0.8, linewidth=1.5)
         # plt.gca().set_xlabel('Time [s]')
-        # plt.gca().set_ylabel('[Nm]')
+        # plt.gca().set_ylabel('[rad/s]')
         # plt.legend(["1st joint velocity","1st joint ref. velocity","2nd joint velocity","2nd joint ref velocity"],loc='upper right')
         # plt.figure()
         # plt.plot(time_vec[175:225], X_sim[175:225,2], "b")
