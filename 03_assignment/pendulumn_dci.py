@@ -5,7 +5,8 @@ import time
     
 
 class Pendulum_dci:
-    ''' Describe continuous state pendulum environment with discrete control input. Torque is discretized
+    ''' 
+        Describe continuous state pendulum environment with discrete control input. Torque is discretized
         with the specified steps. Joint velocity and torque are saturated. 
         Guassian noise can be added in the dynamics. 
         Cost is -1 if the goal state has been reached, zero otherwise.
