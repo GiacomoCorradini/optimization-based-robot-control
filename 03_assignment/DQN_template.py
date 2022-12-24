@@ -19,14 +19,14 @@ def tf2np(y):
 
 def get_critic(nx, nu):
     ''' Create the neural network to represent the Q function '''
-    inputs = layers.Input(shape=(nx+nu,1))
-    state_out1 = layers.Dense(16, activation="relu")(inputs) 
-    state_out2 = layers.Dense(32, activation="relu")(state_out1) 
-    state_out3 = layers.Dense(64, activation="relu")(state_out2) 
-    state_out4 = layers.Dense(64, activation="relu")(state_out3)
-    outputs = layers.Dense(1)(state_out4) 
+    inputs = layers.Input(shape=(nx+nu,1))                        # input
+    state_out1 = layers.Dense(16, activation="relu")(inputs)      # hidden layer 1
+    state_out2 = layers.Dense(32, activation="relu")(state_out1)  # hidden layer 2
+    state_out3 = layers.Dense(64, activation="relu")(state_out2)  # hidden layer 3
+    state_out4 = layers.Dense(64, activation="relu")(state_out3)  # hidden layer 4
+    outputs = layers.Dense(1)(state_out4)                         # output
 
-    model = tf.keras.Model(inputs, outputs)
+    model = tf.keras.Model(inputs, outputs)                       # create the NN
 
     return model
 
