@@ -1,7 +1,8 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.python.ops.numpy_ops import np_config
-
+from tf_agent.replay_buffers import py_uniform_replay_buffer
+import random as rand
 import numpy as np
 from numpy.random import randint, uniform
 
@@ -16,7 +17,7 @@ def tf2np(y):
     ''' convert from tensorflow to numpy '''
     return tf.squeeze(y).numpy()
 
-
+# build the dqn model
 def get_critic(nx, nu):
     ''' Create the neural network to represent the Q function '''
     inputs = layers.Input(shape=(nx+nu,1))                        # input
@@ -48,6 +49,114 @@ def update(xu_batch, cost_batch, xu_next_batch):
     Q_grad = tape.gradient(Q_loss, Q.trainable_variables)          
     # Update the critic backpropagating the gradients
     critic_optimizer.apply_gradients(zip(Q_grad, Q.trainable_variables))    
+
+# epsilon-greedy
+def get_action(exploration_prob, env, Q):
+    # with probability exploration_prob take a random control input
+    if(uniform() < exploration_prob):
+        u = randint(0, env.nu)
+    # otherwise take a greedy control
+    else:
+        u = np.argmin(Q[env.x,:])
+    return u
+
+
+def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, 
+               learningRate, exploration_prob, exploration_decreasing_decay,
+               min_exploration_prob, compute_V_pi_from_Q, plot=False, nprint=1000):
+    ''' 
+        DQN learning algorithm:
+        env: environment 
+        gamma: discount factor
+        Q: initial guess for Q table
+        nEpisodes: number of episodes to be used for evaluation
+        maxEpisodeLength: maximum length of an episode
+        learningRate: learning rate of the algorithm
+        exploration_prob: initial exploration probability for epsilon-greedy policy
+        exploration_decreasing_decay: rate of exponential decay of exploration prob
+        min_exploration_prob: lower bound of exploration probability
+        compute_V_pi_from_Q: function to compute V and pi from Q
+        plot: if True plot the V table every nprint iterations
+        nprint: print some info every nprint iterations
+    '''
+    # replay buffer
+    replay_buffer = []
+    # Keep track of the cost-to-go history (for plot)
+    h_ctg = []
+    # Make a copy of the initial Q table guess
+    Q = np.copy(Q)
+
+    capacity_buffer = 1000
+    batch_size = 32
+    c_step = 4
+
+    # for every episode
+    for i in range(nEpisodes):
+        # reset the state
+        env.reset()
+        J = 0
+        gamma_to_the_i = 1
+        # simulate the system for maxEpisodeLength steps
+        for k in range(maxEpisodeLength):
+            # usefull variable
+            x = env.x
+            
+            # epsilon-greedy action selection
+            u = get_action(exploration_prob, env, Q)
+
+            # observe cost and next state (step = calculate dynamics)
+            x_next, cost = env.step(u)
+
+            # if there are no 32 elements in the batch we cannot extract anything
+
+            # store the experience (s,a,r,s') in the replay_buffer
+            experience = (x, u, cost, x_next)
+            replay_buffer.append(experience)
+
+            # check the length of the replay_buffer and resize it if it's bigger than capacity_buffer
+            del replay_buffer[:-capacity_buffer]
+            
+            # Randomly sample minibatch (size of batch_size) of experience from replay_buffer
+            batch = rand.choices(replay_buffer, k=batch_size)
+            x_batch, _, cost_batch, x_next_batch = list(zip(*batch))
+
+            # update weights
+            update(x_batch, cost_batch, x_next_batch)
+
+
+
+
+
+            # Compute reference Q-value at state x
+            delta = cost + gamma*np.min(Q[x_next,:]) - Q[env.x,u]
+            # Update Q-Table with the given learningRate
+            Q[env.x,u] += learningRate * delta
+            
+            
+            # keep track of the cost to go
+            J += gamma_to_the_i * cost
+            gamma_to_the_i *= gamma
+
+            # Periodically update target network (period = c_step)
+            if k % c_step == 0:
+                Q_target.set_weights(Q.get_weights())
+
+        h_ctg.append(J)
+        # update the exploration probability with an exponential decay: 
+        # eps = exp(-decay*episode)
+        exploration_prob = np.exp(-exploration_decreasing_decay*k)
+        exploration_prob = max(exploration_prob, min_exploration_prob)
+        # use the function compute_V_pi_from_Q(env, Q) to compute and plot V and pi
+        if(k%nprint==0):
+            print("Q learning - Iter %d, J=%.1f, eps=%.1f"%(k,J,100*exploration_prob))
+            if(plot):
+                V, pi = compute_V_pi_from_Q(env, Q)
+                env.plot_V_table(V)
+                env.plot_policy(pi)
+    
+    return Q, h_ctg
+
+        
 
 nx = 2
 nu = 1
