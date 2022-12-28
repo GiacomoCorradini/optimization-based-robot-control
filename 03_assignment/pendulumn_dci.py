@@ -27,8 +27,10 @@ class Pendulum_dci:
     # def nqv(self): return [self.nq,self.nv]
     # @property
     # def nx(self): return self.nq*self.nv
-    # @property
-    # def goal(self): return self.x2i(self.c2d([0.,0.]))
+    
+    # vertical position
+    @property
+    def goal(self): return 0.
     
     # Continuous to discrete c2d..
     # def c2dq(self, q):
@@ -103,29 +105,27 @@ class Pendulum_dci:
         self.xc,_ = self.pendulum.dynamics(self.x,u)
         return self.xc
     
-    # def plot_V_table(self, V):
-    #     ''' Plot the given Value table V '''
-    #     import matplotlib.pyplot as plt
-    #     Q,DQ = np.meshgrid([self.d2cq(i) for i in range(self.nq)], 
-    #                         [self.d2cv(i) for i in range(self.nv)])
-    #     plt.pcolormesh(Q, DQ, V.reshape((self.nv,self.nq)), cmap=plt.cm.get_cmap('Blues'))
-    #     plt.colorbar()
-    #     plt.title('V table')
-    #     plt.xlabel("q")
-    #     plt.ylabel("dq")
-    #     plt.show()
+    def plot_V_table(self, V):
+        ''' Plot the given Value table V '''
+        import matplotlib.pyplot as plt
+        Q,DQ = np.meshgrid(range(V.shape[0]),range(V.shape[0]))
+        plt.pcolormesh(Q, DQ, V.T, cmap=plt.cm.get_cmap('Blues'))
+        plt.colorbar()
+        plt.title('V table')
+        plt.xlabel("q")
+        plt.ylabel("dq")
+        plt.show()
         
-    # def plot_policy(self, pi):
-    #     ''' Plot the given policy table pi '''
-    #     import matplotlib.pyplot as plt
-    #     Q,DQ = np.meshgrid([self.d2cq(i) for i in range(self.nq)], 
-    #                         [self.d2cv(i) for i in range(self.nv)])
-    #     plt.pcolormesh(Q, DQ, pi.reshape((self.nv,self.nq)), cmap=plt.cm.get_cmap('RdBu'))
-    #     plt.colorbar()
-    #     plt.title('Policy')
-    #     plt.xlabel("q")
-    #     plt.ylabel("dq")
-    #     plt.show()
+    def plot_policy(self, pi):
+        ''' Plot the given policy table pi '''
+        import matplotlib.pyplot as plt
+        Q,DQ = np.meshgrid(range(pi.shape[0]),range(pi.shape[0]))
+        plt.pcolormesh(Q, DQ, pi.T, cmap=plt.cm.get_cmap('RdBu'))
+        plt.colorbar()
+        plt.title('Policy')
+        plt.xlabel("q")
+        plt.ylabel("dq")
+        plt.show()
         
     def plot_Q_table(self, Q):
         ''' Plot the given Q table '''

@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.python.ops.numpy_ops import np_config
-from tf_agent.replay_buffers import py_uniform_replay_buffer
+#from tf_agent.replay_buffers import py_uniform_replay_buffer
 import random as rand
 import numpy as np
 from numpy.random import randint, uniform
@@ -44,11 +44,11 @@ def update(xu_batch, cost_batch, xu_next_batch):
         # Compute batch of Values associated to the sampled batch of states
         Q_value = Q(xu_batch, training=True)                         
         # Critic's loss function. tf.math.reduce_mean() computes the mean of elements across dimensions of a tensor
-        Q_loss = tf.math.reduce_mean(tf.math.square(y - Q_value))  
+        Q_loss = tf.math.reduce_mean(tf.math.square(y - Q_value))
     # Compute the gradients of the critic loss w.r.t. critic's parameters (weights and biases)
     Q_grad = tape.gradient(Q_loss, Q.trainable_variables)          
     # Update the critic backpropagating the gradients
-    critic_optimizer.apply_gradients(zip(Q_grad, Q.trainable_variables))    
+    critic_optimizer.apply_gradients(zip(Q_grad, Q.trainable_variables))   
 
 # epsilon-greedy
 def get_action(exploration_prob, env, Q):
@@ -94,54 +94,52 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength,
     for i in range(nEpisodes):
         # reset the state
         env.reset()
-        J = 0
-        gamma_to_the_i = 1
-        # simulate the system for maxEpisodeLength steps
-        for k in range(maxEpisodeLength):
-            # usefull variable
-            x = env.x
-            
-            # epsilon-greedy action selection
-            u = get_action(exploration_prob, env, Q)
+        J_avg = 0
+        for n_ep in range(10):
+            J = 0
+            gamma_to_the_i = 1
+            # simulate the system for maxEpisodeLength steps
+            for k in range(maxEpisodeLength):
+                # usefull variable
+                x = env.x
+                
+                # epsilon-greedy action selection
+                u = get_action(exploration_prob, env, Q)
 
-            # observe cost and next state (step = calculate dynamics)
-            x_next, cost = env.step(u)
+                # observe cost and next state (step = calculate dynamics)
+                x_next, cost = env.step(u)
 
-            # if there are no 32 elements in the batch we cannot extract anything
+                # if there are no 32 elements in the batch we cannot extract anything
 
-            # store the experience (s,a,r,s') in the replay_buffer
-            experience = (x, u, cost, x_next)
-            replay_buffer.append(experience)
+                # store the experience (s,a,r,s') in the replay_buffer
+                experience = (x, u, cost, x_next)
+                replay_buffer.append(experience)
 
-            # check the length of the replay_buffer and resize it if it's bigger than capacity_buffer
-            del replay_buffer[:-capacity_buffer]
-            
-            # Randomly sample minibatch (size of batch_size) of experience from replay_buffer
-            batch = rand.choices(replay_buffer, k=batch_size)
-            x_batch, _, cost_batch, x_next_batch = list(zip(*batch))
+                # check the length of the replay_buffer and resize it if it's bigger than capacity_buffer
+                del replay_buffer[:-capacity_buffer]
+                
+                # Randomly sample minibatch (size of batch_size) of experience from replay_buffer
+                batch = rand.choices(replay_buffer, k=batch_size)
+                x_batch, _, cost_batch, x_next_batch = list(zip(*batch))
 
-            # update weights
-            update(x_batch, cost_batch, x_next_batch)
+                # convert numpy to tensorflow
+                x_batch = np2tf(x_batch)
+                cost_batch = np2tf(cost_batch)
+                x_next_batch = np2tf(x_next_batch)
 
+                # update weights
+                update(x_batch, cost_batch, x_next_batch)
+                
+                # keep track of the cost to go
+                J += gamma_to_the_i * cost
+                gamma_to_the_i *= gamma
 
+                # Periodically update target network (period = c_step)
+                if k % c_step == 0:
+                    Q_target.set_weights(Q.get_weights())
+            J_avg = J / n_ep
 
-
-
-            # Compute reference Q-value at state x
-            delta = cost + gamma*np.min(Q[x_next,:]) - Q[env.x,u]
-            # Update Q-Table with the given learningRate
-            Q[env.x,u] += learningRate * delta
-            
-            
-            # keep track of the cost to go
-            J += gamma_to_the_i * cost
-            gamma_to_the_i *= gamma
-
-            # Periodically update target network (period = c_step)
-            if k % c_step == 0:
-                Q_target.set_weights(Q.get_weights())
-
-        h_ctg.append(J)
+        h_ctg.append(J_avg)
         # update the exploration probability with an exponential decay: 
         # eps = exp(-decay*episode)
         exploration_prob = np.exp(-exploration_decreasing_decay*k)
