@@ -52,7 +52,7 @@ if __name__=='__main__':
     np.random.seed(RANDOM_SEED)
     
     ### --- Hyper paramaters
-    NEPISODES               = 5000          # Number of training episodes
+    NEPISODES               = 1000          # Number of training episodes
     NPRINT                  = 500           # print something every NPRINT episodes
     MAX_EPISODE_LENGTH      = 100           # Max episode length
     LEARNING_RATE           = 0.8           # alpha coefficient of Q learning algorithm
@@ -84,14 +84,21 @@ if __name__=='__main__':
     nu=11   # number of discretization steps for the joint torque u
     env = Pendulum_dci(nu) # enviroment with continuous state and discrete control input
     
-
-    #Q(np2tf(env.pendulum.nx))
-
-    
-
     Q, h_ctg = dqn_learning(env, DISCOUNT, Q, Q_target, NEPISODES, MAX_EPISODE_LENGTH, LEARNING_RATE, exploration_prob, exploration_decreasing_decay, min_exploration_prob, compute_V_pi_from_Q, PLOT, NPRINT)
     
     print("\nTraining finished")
+
+    w = Q.get_weights()
+    for i in range(len(w)):
+        print("Shape Q weights layer", i, w[i].shape)
+    
+    for i in range(len(w)):
+        print("Norm Q weights layer", i, np.linalg.norm(w[i]))
+
+    print("\nSave NN weights to file (in HDF5)")
+    Q.save_weights("namefile.h5")
+
+    
     V, pi = compute_V_pi_from_Q(env,Q)
     env.plot_V_table(V)
     env.plot_policy(pi)

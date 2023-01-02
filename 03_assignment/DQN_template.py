@@ -28,7 +28,7 @@ def get_critic(nx, nu):
     outputs = layers.Dense(1)(state_out4)                         # output
 
     model = tf.keras.Model(inputs, outputs)                       # create the NN
-
+    
     return model
 
 def update(xu_batch, cost_batch, xu_next_batch):
@@ -48,16 +48,18 @@ def update(xu_batch, cost_batch, xu_next_batch):
     # Compute the gradients of the critic loss w.r.t. critic's parameters (weights and biases)
     Q_grad = tape.gradient(Q_loss, Q.trainable_variables)          
     # Update the critic backpropagating the gradients
-    critic_optimizer.apply_gradients(zip(Q_grad, Q.trainable_variables))   
+    critic_optimizer.apply_gradients(zip(Q_grad, Q.trainable_variables))
 
 # epsilon-greedy
-def get_action(exploration_prob, env, Q):
+def get_action(exploration_prob, nu, Q, x):
     # with probability exploration_prob take a random control input
     if(uniform() < exploration_prob):
-        u = randint(0, env.nu)
+        u = randint(0, nu)
     # otherwise take a greedy control
     else:
-        u = np.argmin(Q[env.x,:])
+       action_values = Q.predict(x)
+       best_action_index = tf.argmin(action_values)
+       u = tf2np(action_values[best_action_index])
     return u
 
 
@@ -84,7 +86,7 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
     # Keep track of the cost-to-go history (for plot)
     h_ctg = []
     # Make a copy of the initial Q table guess
-    Q = np.copy(Q)
+    Q = tf.keras.models.clone_model(Q)
 
     capacity_buffer = 1000
     batch_size = 32
@@ -100,20 +102,20 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         gamma_to_the_i = 1
         # simulate the system for maxEpisodeLength steps
         for k in range(int(maxEpisodeLength)):
-            # usefull variable
+            # useful variable
             x = env.x
-            
+      
             # epsilon-greedy action selection
-            u = get_action(exploration_prob, env, Q)
-
+            u = get_action(exploration_prob, env.nu, Q, x)
+            
             # observe cost and next state (step = calculate dynamics)
             x_next, cost = env.step(u)
-            print(list(x_next.T))
-
-            # if there are no 32 elements in the batch we cannot extract anything
+            u_next = get_action(exploration_prob, env.nu, Q, x_next)
+        
+            ###### if there are no 32 elements in the batch we cannot extract anything
 
             # store the experience (s,a,r,s') in the replay_buffer
-            experience = [x, u, cost, x_next]
+            experience = [x, u, cost, x_next, u_next]
             replay_buffer.append(experience)
 
             # check the length of the replay_buffer and resize it if it's bigger than capacity_buffer
@@ -121,22 +123,23 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
             
             # Randomly sample minibatch (size of batch_size) of experience from replay_buffer
             batch = rand.choices(replay_buffer, k=batch_size)
-            x_batch, _, cost_batch, x_next_batch = list(zip(*batch))
-
-            print(x_batch)
+            x_batch, u_batch, cost_batch, x_next_batch, u_next_batch = list(zip(*batch))
             
+            x_batch = np.concatenate(x_batch, axis=1)
+            u_batch = np.asarray(u_batch)
+            cost_batch = np.asarray(cost_batch)
+            xu_batch = np.append(x_batch, u_batch)
+            x_next_batch = np.concatenate(x_next_batch, axis=1)
+            u_next_batch = np.asarray(u_next_batch)
+            xu_next_batch = np.append(x_next_batch, u_next_batch)
+           
             # convert numpy to tensorflow
-            #x_batch = x_batch.T
-            x_batch = np2tf(x_batch)
-            print(x_batch)
-
-            #cost_batch = cost_batch.T
+            xu_batch = np2tf(xu_batch) 
             cost_batch = np2tf(cost_batch)
-            #x_next_batch = x_next_batch.T
-            x_next_batch = np2tf(x_next_batch)
+            xu_next_batch = np2tf(xu_next_batch)
 
             # update weights
-            update(x_batch, cost_batch, x_next_batch)
+            update(xu_batch, cost_batch, xu_next_batch)
             
             # keep track of the cost to go
             J += gamma_to_the_i * cost
@@ -145,6 +148,7 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
             # Periodically update target network (period = c_step)
             if k % c_step == 0:
                 Q_target.set_weights(Q.get_weights())
+
         
         J_avg = J / ep
 
@@ -161,8 +165,6 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
                 env.plot_policy(pi)
     
     return Q, h_ctg
-
-        
 
 nx = 2
 nu = 1
