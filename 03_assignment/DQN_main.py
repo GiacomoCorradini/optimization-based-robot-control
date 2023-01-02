@@ -64,6 +64,8 @@ if __name__=='__main__':
     exploration_decreasing_decay    = 0.001 # exploration decay for exponential decreasing
     min_exploration_prob            = 0.001 # minimum of exploration proba
 
+    FLAG = False
+
     nx = 2
     nu = 1
     QVALUE_LEARNING_RATE = 1e-3
@@ -86,21 +88,23 @@ if __name__=='__main__':
     nu=11   # number of discretization steps for the joint torque u
     env = Pendulum_dci(nu) # enviroment with continuous state and discrete control input
     
-    Q, h_ctg = dqn_learning(env, DISCOUNT, Q, Q_target, NEPISODES, MAX_EPISODE_LENGTH, LEARNING_RATE, exploration_prob, exploration_decreasing_decay, min_exploration_prob, compute_V_pi_from_Q, PLOT, NPRINT)
-    
-    print("\nTraining finished")
+    if FLAG == True:
+        Q, h_ctg = dqn_learning(env, DISCOUNT, Q, Q_target, NEPISODES, MAX_EPISODE_LENGTH, LEARNING_RATE, exploration_prob, exploration_decreasing_decay, min_exploration_prob, compute_V_pi_from_Q, PLOT, NPRINT)
+        
+        print("\nTraining finished")
+        Q.save('saved_model/my_model')
+        print("\nSave NN weights to file (in HDF5)")
+        Q.save_weights("weight.h5")
 
     w = Q.get_weights()
     for i in range(len(w)):
         print("Shape Q weights layer", i, w[i].shape)
-    
     for i in range(len(w)):
         print("Norm Q weights layer", i, np.linalg.norm(w[i]))
 
-    print("\nSave NN weights to file (in HDF5)")
-    Q.save_weights("namefile.h5")
+    if FLAG == False:
+        Q = tf.keras.models.load_model('saved_model/my_model')
 
-    
     V, pi = compute_V_pi_from_Q(env,Q)
     env.plot_V_table(V)
     env.plot_policy(pi)
