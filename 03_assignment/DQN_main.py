@@ -1,15 +1,13 @@
 import numpy as np
 from numpy.random import randint, uniform
 from pendulumn_dci import Pendulum_dci
-from DQN_template import get_critic
+from DQN_template import get_critic, dqn_learning, np2tf, tf2np
 import matplotlib.pyplot as plt
 import time
 
-
-
-
-
-
+import tensorflow as tf
+from tensorflow.keras import layers
+from tensorflow.python.ops.numpy_ops import np_config
 
 
 def render_greedy_policy(env, Q, gamma, x0=None, maxiter=20):
@@ -47,7 +45,6 @@ def compute_V_pi_from_Q(env, Q):
 
     return V, pi
 
-
 if __name__=='__main__':
     ### --- Random seed
     RANDOM_SEED = int((time.time()%10)*1000)
@@ -59,7 +56,7 @@ if __name__=='__main__':
     NPRINT                  = 500           # print something every NPRINT episodes
     MAX_EPISODE_LENGTH      = 100           # Max episode length
     LEARNING_RATE           = 0.8           # alpha coefficient of Q learning algorithm
-    DISCOUNT                = 0.9           # Discount factor 
+    DISCOUNT                = 0.99          # Discount factor 
     PLOT                    = True          # Plot stuff if True
     exploration_prob                = 1     # initial exploration probability of eps-greedy policy
     exploration_decreasing_decay    = 0.001 # exploration decay for exponential decreasing
@@ -68,25 +65,31 @@ if __name__=='__main__':
     nx = 2
     nu = 1
     QVALUE_LEARNING_RATE = 1e-3
-    DISCOUNT = 0.99
 
     # initialize the Q network and Q_target network
     Q = get_critic(nx, nu)
     Q_target = get_critic(nx, nu)
 
     Q.summary()
+
+    # Set initial weights of targets equal to those of the critic
+    Q_target.set_weights(Q.get_weights())
+
+    # Set optimizer specifying the learning rates
+    critic_optimizer = tf.keras.optimizers.Adam(QVALUE_LEARNING_RATE)
     
+    print(critic_optimizer)
+
     ### --- Environment
-    #nq=51   # number of discretization steps for the joint angle q
-    #nv=21   # number of discretization steps for the joint velocity v
     nu=11   # number of discretization steps for the joint torque u
-    #env = Pendulum_dci(nq, nv, nu)
     env = Pendulum_dci(nu) # enviroment with continuous state and discrete control input
-    Q   = np.zeros([env.nx,env.nu])       # Q-table initialized to 0
     
-    Q, h_ctg = q_learning(env, DISCOUNT, Q, NEPISODES, MAX_EPISODE_LENGTH, 
-                            LEARNING_RATE, exploration_prob, exploration_decreasing_decay,
-                            min_exploration_prob, compute_V_pi_from_Q, PLOT, NPRINT)
+
+    #Q(np2tf(env.pendulum.nx))
+
+    
+
+    Q, h_ctg = dqn_learning(env, DISCOUNT, Q, Q_target, NEPISODES, MAX_EPISODE_LENGTH, LEARNING_RATE, exploration_prob, exploration_decreasing_decay, min_exploration_prob, compute_V_pi_from_Q, PLOT, NPRINT)
     
     print("\nTraining finished")
     V, pi = compute_V_pi_from_Q(env,Q)
@@ -94,27 +97,14 @@ if __name__=='__main__':
     env.plot_policy(pi)
     print("Average/min/max Value:", np.mean(V), np.min(V), np.max(V)) 
     
-    print("Compute real Value function of greedy policy")
-    MAX_EVAL_ITERS    = 200     # Max number of iterations for policy evaluation
-    VALUE_THR         = 1e-3    # convergence threshold for policy evaluation
-    V_pi = policy_eval(env, DISCOUNT, pi, V, MAX_EVAL_ITERS, VALUE_THR, False)
-    env.plot_V_table(V_pi)
-    print("Average/min/max Value:", np.mean(V_pi), np.min(V_pi), np.max(V_pi)) 
+    # print("Compute real Value function of greedy policy")
+    # MAX_EVAL_ITERS    = 200     # Max number of iterations for policy evaluation
+    # VALUE_THR         = 1e-3    # convergence threshold for policy evaluation
+    # V_pi = policy_eval(env, DISCOUNT, pi, V, MAX_EVAL_ITERS, VALUE_THR, False)
+    # env.plot_V_table(V_pi)
+    # print("Average/min/max Value:", np.mean(V_pi), np.min(V_pi), np.max(V_pi)) 
         
-    # compute real optimal Value function
-    print("Compute optimal Value table using policy iteratiton")
-    from sol.ex_1_policy_iteration_sol import policy_iteration
-    MAX_EVAL_ITERS    = 200     # Max number of iterations for policy evaluation
-    MAX_IMPR_ITERS    = 20      # Max number of iterations for policy improvement
-    VALUE_THR         = 1e-3    # convergence threshold for policy evaluation
-    POLICY_THR        = 1e-4    # convergence threshold for policy improvement
-    V_opt  = np.zeros(env.nx)                       # Value table initialized to 0
-    pi_opt = env.c2du(0.0)*np.ones(env.nx, np.int)  # policy table initialized to zero torque
-    pi_opt = policy_iteration(env, DISCOUNT, pi_opt, V_opt, MAX_EVAL_ITERS, MAX_IMPR_ITERS, VALUE_THR, POLICY_THR, False, 10000)
-    env.plot_V_table(V_opt)
-    print("Average/min/max Value:", np.mean(V_opt), np.min(V_opt), np.max(V_opt)) 
-    
-    render_greedy_policy(env, Q, DISCOUNT)
-    plt.plot( np.cumsum(h_ctg)/range(1,NEPISODES+1) )
-    plt.title ("Average cost-to-go")
-    plt.show()
+    # render_greedy_policy(env, Q, DISCOUNT)
+    # plt.plot( np.cumsum(h_ctg)/range(1,NEPISODES+1) )
+    # plt.title ("Average cost-to-go")
+    # plt.show()

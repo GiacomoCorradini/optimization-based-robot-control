@@ -26,8 +26,8 @@ class Display():
         
         # Create the client and connect it with the display server.
         try:
-            #self.viewer=gepetto.corbaserver.Client()
-            self.viewer=pin.visualize.MeshcatVisualizer
+            self.viewer=gepetto.corbaserver.Client()
+            #self.viewer=pin.visualize.MeshcatVisualizer
         except:
             print("Error while starting the viewer client. ")
             print("Check whether Gepetto-viewer is properly started")

@@ -61,8 +61,8 @@ def get_action(exploration_prob, env, Q):
     return u
 
 
-def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, 
-               learningRate, exploration_prob, exploration_decreasing_decay,
+def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
+               learningRate, exploration_prob, exploration_decreasing_decay, \
                min_exploration_prob, compute_V_pi_from_Q, plot=False, nprint=1000):
     ''' 
         DQN learning algorithm:
@@ -89,61 +89,69 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength,
     capacity_buffer = 1000
     batch_size = 32
     c_step = 4
+    ep = 0
 
     # for every episode
     for i in range(nEpisodes):
         # reset the state
         env.reset()
-        J_avg = 0
-        for n_ep in range(10):
-            J = 0
-            gamma_to_the_i = 1
-            # simulate the system for maxEpisodeLength steps
-            for k in range(maxEpisodeLength):
-                # usefull variable
-                x = env.x
-                
-                # epsilon-greedy action selection
-                u = get_action(exploration_prob, env, Q)
+        J = 0
+        ep += 1
+        gamma_to_the_i = 1
+        # simulate the system for maxEpisodeLength steps
+        for k in range(int(maxEpisodeLength)):
+            # usefull variable
+            x = env.x
+            
+            # epsilon-greedy action selection
+            u = get_action(exploration_prob, env, Q)
 
-                # observe cost and next state (step = calculate dynamics)
-                x_next, cost = env.step(u)
+            # observe cost and next state (step = calculate dynamics)
+            x_next, cost = env.step(u)
+            print(list(x_next.T))
 
-                # if there are no 32 elements in the batch we cannot extract anything
+            # if there are no 32 elements in the batch we cannot extract anything
 
-                # store the experience (s,a,r,s') in the replay_buffer
-                experience = (x, u, cost, x_next)
-                replay_buffer.append(experience)
+            # store the experience (s,a,r,s') in the replay_buffer
+            experience = [x, u, cost, x_next]
+            replay_buffer.append(experience)
 
-                # check the length of the replay_buffer and resize it if it's bigger than capacity_buffer
-                del replay_buffer[:-capacity_buffer]
-                
-                # Randomly sample minibatch (size of batch_size) of experience from replay_buffer
-                batch = rand.choices(replay_buffer, k=batch_size)
-                x_batch, _, cost_batch, x_next_batch = list(zip(*batch))
+            # check the length of the replay_buffer and resize it if it's bigger than capacity_buffer
+            del replay_buffer[:-capacity_buffer]
+            
+            # Randomly sample minibatch (size of batch_size) of experience from replay_buffer
+            batch = rand.choices(replay_buffer, k=batch_size)
+            x_batch, _, cost_batch, x_next_batch = list(zip(*batch))
 
-                # convert numpy to tensorflow
-                x_batch = np2tf(x_batch)
-                cost_batch = np2tf(cost_batch)
-                x_next_batch = np2tf(x_next_batch)
+            print(x_batch)
+            
+            # convert numpy to tensorflow
+            #x_batch = x_batch.T
+            x_batch = np2tf(x_batch)
+            print(x_batch)
 
-                # update weights
-                update(x_batch, cost_batch, x_next_batch)
-                
-                # keep track of the cost to go
-                J += gamma_to_the_i * cost
-                gamma_to_the_i *= gamma
+            #cost_batch = cost_batch.T
+            cost_batch = np2tf(cost_batch)
+            #x_next_batch = x_next_batch.T
+            x_next_batch = np2tf(x_next_batch)
 
-                # Periodically update target network (period = c_step)
-                if k % c_step == 0:
-                    Q_target.set_weights(Q.get_weights())
-            J_avg = J / n_ep
+            # update weights
+            update(x_batch, cost_batch, x_next_batch)
+            
+            # keep track of the cost to go
+            J += gamma_to_the_i * cost
+            gamma_to_the_i *= gamma
+
+            # Periodically update target network (period = c_step)
+            if k % c_step == 0:
+                Q_target.set_weights(Q.get_weights())
+        
+        J_avg = J / ep
 
         h_ctg.append(J_avg)
         # update the exploration probability with an exponential decay: 
         # eps = exp(-decay*episode)
-        exploration_prob = np.exp(-exploration_decreasing_decay*k)
-        exploration_prob = max(exploration_prob, min_exploration_prob)
+        exploration_prob = max(np.exp(-exploration_decreasing_decay*ep), min_exploration_prob)
         # use the function compute_V_pi_from_Q(env, Q) to compute and plot V and pi
         if(k%nprint==0):
             print("Q learning - Iter %d, J=%.1f, eps=%.1f"%(k,J,100*exploration_prob))
@@ -166,6 +174,17 @@ Q = get_critic(nx, nu)
 Q_target = get_critic(nx, nu)
 
 Q.summary()
+
+from tensorflow.python.keras import Sequential
+from tensorflow.python.keras.layers import Dense
+
+q_net = Sequential()
+q_net.add(Dense(64, input_dim=4, activation='relu',kernel_initializer='he_uniform'))
+q_net.add(Dense(32, activation='relu', kernel_initializer='he_uniform'))
+q_net.add(Dense(2, activation='linear', kernel_initializer='he_uniform'))
+#q_net.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),loss=tf.keras.losses.mean_squared_error)
+
+q_net.summary()
 
 # Set initial weights of targets equal to those of the critic
 Q_target.set_weights(Q.get_weights())
@@ -191,6 +210,8 @@ for i in range(len(w)):
 
 print("\nSave NN weights to file (in HDF5)")
 Q.save_weights("namefile.h5")
+
+#update()
 
 print("Load NN weights from file\n")
 Q_target.load_weights("namefile.h5")

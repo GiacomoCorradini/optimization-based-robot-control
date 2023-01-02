@@ -17,7 +17,6 @@ from display import Display
 from numpy.linalg import inv
 import time
 
-
 class Visual:
     '''
     Class representing one 3D mesh of the robot, to be attached to a joint. The class contains:
@@ -119,8 +118,8 @@ class Pendulum:
     def reset(self, x0=None):
         ''' Reset the state of the environment to x0 '''
         if x0 is None: 
-            q0 = np.pi*(np.rand(self.nq)*2-1)
-            v0 = np.rand(self.nv)*2-1
+            q0 = np.pi*(np.random.rand(self.nq)*2-1)
+            v0 = np.random.rand(self.nv)*2-1
             x0 = np.vstack([q0,v0])
         assert len(x0)==self.nx
         self.x = x0.copy()
