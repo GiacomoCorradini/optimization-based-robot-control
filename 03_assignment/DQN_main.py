@@ -9,39 +9,41 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.python.ops.numpy_ops import np_config
 
-
 def render_greedy_policy(env, Q, gamma, x0=None, maxiter=20):
     '''Roll-out from random state using greedy policy.'''
     x0 = x = env.reset(x0)
     costToGo = 0.0
     gamma_i = 1
     for i in range(maxiter):
-        u = np.argmin(Q[x,:])
+        action_values = Q.predict(x)
+        best_action_index = tf.argmin(action_values)
+        u = tf2np(action_values[best_action_index])
 #        print("State", x, "Control", u, "Q", Q[x,u])
         x,c = env.step(u)
         costToGo += gamma_i*c
         gamma_i *= gamma
         env.render()
     print("Real cost to go of state", x0, ":", costToGo)
-    
+
 def compute_V_pi_from_Q(env, Q):
     ''' Compute Value table and greedy policy pi from Q table. '''
-    V = np.zeros(Q.shape[0])
-    pi = np.zeros(Q.shape[0], np.int)
-    for x in range(Q.shape[0]):
-#        pi[x] = np.argmin(Q[x,:])
+    action_values = Q.predict(env.x)
+    best_action_index = tf.argmin(action_values)
+    pi = tf2np(action_values[best_action_index])
+    
+    V = tf2np(tf.keras.backend.min(Q))
+    # pi[x] = np.argmin(Q[x,:])
         # Rather than simply using argmin we do something slightly more complex
         # to ensure simmetry of the policy when multiply control inputs
         # result in the same value. In these cases we prefer the more extreme
         # actions
-        V[x] = np.min(Q[x,:])
-        u_best = np.where(Q[x,:]==V[x])[0]
-        if(u_best[0]>env.c2du(0.0)):
-            pi[x] = u_best[-1]
-        elif(u_best[-1]<env.c2du(0.0)):
-            pi[x] = u_best[0]
-        else:
-            pi[x] = u_best[int(u_best.shape[0]/2)]
+    # u_best = np.where(Q[:]==V)[0]
+    # if(u_best[0]>env.c2du(0.0)):
+    #     pi = u_best[-1]
+    # elif(u_best[-1]<env.c2du(0.0)):
+    #     pi = u_best[0]
+    # else:
+    #     pi = u_best[int(u_best.shape[0]/2)]
 
     return V, pi
 
@@ -52,8 +54,8 @@ if __name__=='__main__':
     np.random.seed(RANDOM_SEED)
     
     ### --- Hyper paramaters
-    NEPISODES               = 1000          # Number of training episodes
-    NPRINT                  = 500           # print something every NPRINT episodes
+    NEPISODES               = 100           # Number of training episodes
+    NPRINT                  = 10           # print something every NPRINT episodes
     MAX_EPISODE_LENGTH      = 100           # Max episode length
     LEARNING_RATE           = 0.8           # alpha coefficient of Q learning algorithm
     DISCOUNT                = 0.99          # Discount factor 

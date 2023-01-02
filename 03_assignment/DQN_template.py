@@ -148,7 +148,6 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
             # Periodically update target network (period = c_step)
             if k % c_step == 0:
                 Q_target.set_weights(Q.get_weights())
-
         
         J_avg = J / ep
 
