@@ -94,7 +94,7 @@ if __name__=='__main__':
         print("\nTraining finished")
         Q.save('saved_model/my_model')
         print("\nSave NN weights to file (in HDF5)")
-        Q.save_weights("weight.h5")
+        Q.save_weights("saved_weights/weight.h5")
 
     w = Q.get_weights()
     for i in range(len(w)):

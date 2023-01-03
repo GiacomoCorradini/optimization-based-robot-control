@@ -51,9 +51,10 @@ def update(xu_batch, cost_batch, xu_next_batch):
     critic_optimizer.apply_gradients(zip(Q_grad, Q.trainable_variables))
 
 # epsilon-greedy
-def get_action(exploration_prob, nu, Q, x):
+def get_action(exploration_prob, nu, Q, x, EGREEDY):
     # with probability exploration_prob take a random control input
-    if(uniform() < exploration_prob):
+    
+    if(uniform() < exploration_prob and EGREEDY == True):
         u = randint(0, nu)
     # otherwise take a greedy control
     else:
@@ -106,11 +107,11 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
             x = env.x
       
             # epsilon-greedy action selection
-            u = get_action(exploration_prob, env.nu, Q, x)
+            u = get_action(exploration_prob, env.nu, Q, x, True)
             
             # observe cost and next state (step = calculate dynamics)
             x_next, cost = env.step(u)
-            u_next = get_action(exploration_prob, env.nu, Q, x_next)
+            u_next = get_action(exploration_prob, env.nu, Q, x_next, False)
         
             ###### if there are no 32 elements in the batch we cannot extract anything
 
