@@ -54,16 +54,16 @@ if __name__=='__main__':
     np.random.seed(RANDOM_SEED)
     
     ### --- Hyper paramaters
-    NEPISODES               = 100             # Number of training episodes
-    NPRINT                  = 10              # print something every NPRINT episodes
-    MAX_EPISODE_LENGTH      = 100             # Max episode length
-    LEARNING_RATE           = 0.8             # alpha coefficient of Q learning algorithm
-    DISCOUNT                = 0.99            # Discount factor 
-    PLOT                    = True            # Plot stuff if True
+    NEPISODES                       = 100     # Number of training episodes
+    NPRINT                          = 10      # print something every NPRINT episodes
+    MAX_EPISODE_LENGTH              = 100     # Max episode length
+    LEARNING_RATE                   = 0.8     # alpha coefficient of Q learning algorithm
+    DISCOUNT                        = 0.99    # Discount factor 
+    PLOT                            = True    # Plot stuff if True
     exploration_prob                = 1       # initial exploration probability of eps-greedy policy
     exploration_decreasing_decay    = 0.001   # exploration decay for exponential decreasing
     min_exploration_prob            = 0.001   # minimum of exploration probability
-    FLAG = True                              # 
+    FLAG                            = True    # False = Load Model
 
     nx = 2 
     nu = 1
@@ -93,7 +93,7 @@ if __name__=='__main__':
         print("\nTraining finished")
         Q.save('saved_model/my_model')
         print("\nSave NN weights to file (in HDF5)")
-        Q.save_weights("saved_weights/weight.h5")
+        Q.save_weights('saved_model/weight.h5')
 
     w = Q.get_weights()
     for i in range(len(w)):

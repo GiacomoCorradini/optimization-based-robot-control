@@ -203,12 +203,6 @@ w = Q.get_weights()
 for i in range(len(w)):
     print("Norm Q weights layer", i, np.linalg.norm(w[i]))
 
-print("\nSave NN weights to file (in HDF5)")
-Q.save_weights("namefile.h5")
-
-print("Load NN weights from file\n")
-Q_target.load_weights("namefile.h5")
-
 w = Q_target.get_weights()
 for i in range(len(w)):
     print("Norm Q weights layer", i, np.linalg.norm(w[i]))
