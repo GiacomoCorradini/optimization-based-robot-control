@@ -17,7 +17,6 @@ def tf2np(y):
     ''' convert from tensorflow to numpy '''
     return tf.squeeze(y).numpy()
 
-# build the dqn model
 def get_critic(nx, nu):
     ''' Create the neural network to represent the Q function '''
     inputs = layers.Input(shape=(nx+nu,1))                        # input
@@ -50,10 +49,10 @@ def update(xu_batch, cost_batch, xu_next_batch):
     # Update the critic backpropagating the gradients
     critic_optimizer.apply_gradients(zip(Q_grad, Q.trainable_variables))
 
-# epsilon-greedy
 def get_action(exploration_prob, nu, Q, x, EGREEDY):
-    # with probability exploration_prob take a random control input
+    '''Get the action using an epsilon-greedy policy'''
     
+    # with probability exploration_prob take a random control input
     if(uniform() < exploration_prob and EGREEDY == True):
         u = randint(0, nu)
     # otherwise take a greedy control
@@ -63,7 +62,6 @@ def get_action(exploration_prob, nu, Q, x, EGREEDY):
        u = tf2np(action_values[best_action_index])
     return u
 
-
 def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
                learningRate, exploration_prob, exploration_decreasing_decay, \
                min_exploration_prob, compute_V_pi_from_Q, plot=False, nprint=1000):
@@ -71,7 +69,8 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         DQN learning algorithm:
         env: environment 
         gamma: discount factor
-        Q: initial guess for Q table
+        Q: initial critiv Q function
+        Q_target: target neural network
         nEpisodes: number of episodes to be used for evaluation
         maxEpisodeLength: maximum length of an episode
         learningRate: learning rate of the algorithm
@@ -82,16 +81,19 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         plot: if True plot the V table every nprint iterations
         nprint: print some info every nprint iterations
     '''
-    # replay buffer
-    replay_buffer = []
-    # Keep track of the cost-to-go history (for plot)
-    h_ctg = []
-    # Make a copy of the initial Q table guess
-    Q = tf.keras.models.clone_model(Q)
 
+    # create the replay buffer
+    replay_buffer = []
     capacity_buffer = 1000
     batch_size = 32
+    # Keep track of the cost-to-go history (for plot)
+    h_ctg = []
+    # Make a copy of the initial Q function
+    Q = tf.keras.models.clone_model(Q)
+
+    # n° of step to update the target NN
     c_step = 4
+    # count the n° of episodes
     ep = 0
 
     # for every episode
@@ -113,48 +115,50 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
             x_next, cost = env.step(u)
             u_next = get_action(exploration_prob, env.nu, Q, x_next, False)
         
-            ###### if there are no 32 elements in the batch we cannot extract anything
-
             # store the experience (s,a,r,s') in the replay_buffer
             experience = [x, u, cost, x_next, u_next]
             replay_buffer.append(experience)
-
             # check the length of the replay_buffer and resize it if it's bigger than capacity_buffer
             del replay_buffer[:-capacity_buffer]
             
-            # Randomly sample minibatch (size of batch_size) of experience from replay_buffer
-            batch = rand.choices(replay_buffer, k=batch_size)
-            x_batch, u_batch, cost_batch, x_next_batch, u_next_batch = list(zip(*batch))
+            # do the algorithm only if we have already collected more than 100 episodes
+            if len(replay_buffer) > 100:  
+                # Randomly sample minibatch (size of batch_size) of experience from replay_buffer
+                batch = rand.choices(replay_buffer, k=batch_size)
+                x_batch, u_batch, cost_batch, x_next_batch, u_next_batch = list(zip(*batch))
+                
+                # convert in order to be usable in the update function
+                x_batch = np.concatenate(x_batch, axis=1)
+                u_batch = np.asarray(u_batch)
+                cost_batch = np.asarray(cost_batch)
+                xu_batch = np.append(x_batch, u_batch)
+                x_next_batch = np.concatenate(x_next_batch, axis=1)
+                u_next_batch = np.asarray(u_next_batch)
+                xu_next_batch = np.append(x_next_batch, u_next_batch)
             
-            x_batch = np.concatenate(x_batch, axis=1)
-            u_batch = np.asarray(u_batch)
-            cost_batch = np.asarray(cost_batch)
-            xu_batch = np.append(x_batch, u_batch)
-            x_next_batch = np.concatenate(x_next_batch, axis=1)
-            u_next_batch = np.asarray(u_next_batch)
-            xu_next_batch = np.append(x_next_batch, u_next_batch)
-           
-            # convert numpy to tensorflow
-            xu_batch = np2tf(xu_batch) 
-            cost_batch = np2tf(cost_batch)
-            xu_next_batch = np2tf(xu_next_batch)
+                # convert numpy to tensorflow
+                xu_batch = np2tf(xu_batch) 
+                cost_batch = np2tf(cost_batch)
+                xu_next_batch = np2tf(xu_next_batch)
 
-            # update weights
-            update(xu_batch, cost_batch, xu_next_batch)
-            
+                # update weights
+                update(xu_batch, cost_batch, xu_next_batch)
+               
+                # Periodically update target network (period = c_step)
+                if k % c_step == 0:
+                    Q_target.set_weights(Q.get_weights())
+                
             # keep track of the cost to go
             J += gamma_to_the_i * cost
             gamma_to_the_i *= gamma
 
-            # Periodically update target network (period = c_step)
-            if k % c_step == 0:
-                Q_target.set_weights(Q.get_weights())
+            
         
+        # calculate average cost
         J_avg = J / ep
-
         h_ctg.append(J_avg)
+
         # update the exploration probability with an exponential decay: 
-        # eps = exp(-decay*episode)
         exploration_prob = max(np.exp(-exploration_decreasing_decay*ep), min_exploration_prob)
         # use the function compute_V_pi_from_Q(env, Q) to compute and plot V and pi
         if(k%nprint==0):
@@ -176,17 +180,6 @@ Q = get_critic(nx, nu)
 Q_target = get_critic(nx, nu)
 
 Q.summary()
-
-from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense
-
-q_net = Sequential()
-q_net.add(Dense(64, input_dim=4, activation='relu',kernel_initializer='he_uniform'))
-q_net.add(Dense(32, activation='relu', kernel_initializer='he_uniform'))
-q_net.add(Dense(2, activation='linear', kernel_initializer='he_uniform'))
-#q_net.compile(optimizer=tf.optimizers.Adam(learning_rate=0.001),loss=tf.keras.losses.mean_squared_error)
-
-q_net.summary()
 
 # Set initial weights of targets equal to those of the critic
 Q_target.set_weights(Q.get_weights())
@@ -212,8 +205,6 @@ for i in range(len(w)):
 
 print("\nSave NN weights to file (in HDF5)")
 Q.save_weights("namefile.h5")
-
-#update()
 
 print("Load NN weights from file\n")
 Q_target.load_weights("namefile.h5")

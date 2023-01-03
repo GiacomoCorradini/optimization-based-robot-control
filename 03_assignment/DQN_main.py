@@ -54,19 +54,18 @@ if __name__=='__main__':
     np.random.seed(RANDOM_SEED)
     
     ### --- Hyper paramaters
-    NEPISODES               = 100           # Number of training episodes
-    NPRINT                  = 10           # print something every NPRINT episodes
-    MAX_EPISODE_LENGTH      = 100           # Max episode length
-    LEARNING_RATE           = 0.8           # alpha coefficient of Q learning algorithm
-    DISCOUNT                = 0.99          # Discount factor 
-    PLOT                    = True          # Plot stuff if True
-    exploration_prob                = 1     # initial exploration probability of eps-greedy policy
-    exploration_decreasing_decay    = 0.001 # exploration decay for exponential decreasing
-    min_exploration_prob            = 0.001 # minimum of exploration proba
+    NEPISODES               = 100             # Number of training episodes
+    NPRINT                  = 10              # print something every NPRINT episodes
+    MAX_EPISODE_LENGTH      = 100             # Max episode length
+    LEARNING_RATE           = 0.8             # alpha coefficient of Q learning algorithm
+    DISCOUNT                = 0.99            # Discount factor 
+    PLOT                    = True            # Plot stuff if True
+    exploration_prob                = 1       # initial exploration probability of eps-greedy policy
+    exploration_decreasing_decay    = 0.001   # exploration decay for exponential decreasing
+    min_exploration_prob            = 0.001   # minimum of exploration probability
+    FLAG = True                              # 
 
-    FLAG = False
-
-    nx = 2
+    nx = 2 
     nu = 1
     QVALUE_LEARNING_RATE = 1e-3
 
