@@ -25,9 +25,10 @@ def render_greedy_policy(env, Q, gamma, x0=None, maxiter=20):
         env.render()
     print("Real cost to go of state", x0, ":", costToGo)
 
-def compute_V_pi_from_Q(env, Q):
+def compute_V_pi_from_Q(env, Q, x):
     ''' Compute Value table and greedy policy pi from Q table. '''
-    action_values = Q.predict(env.x)
+
+    action_values = Q.predict(x)
     best_action_index = tf.argmin(action_values)
     pi = tf2np(action_values[best_action_index])
     
@@ -84,11 +85,11 @@ if __name__=='__main__':
     print(critic_optimizer)
 
     ### --- Environment
-    nu=11   # number of discretization steps for the joint torque u
-    env = Pendulum_dci(nu) # enviroment with continuous state and discrete control input
+    nd_u = 11                 # number of discretization steps for the joint torque u
+    env  = Pendulum_dci(nd_u) # enviroment with continuous state and discrete control input
     
-    if FLAG == True:
-        Q, h_ctg = dqn_learning(env, DISCOUNT, Q, Q_target, NEPISODES, MAX_EPISODE_LENGTH, LEARNING_RATE, exploration_prob, exploration_decreasing_decay, min_exploration_prob, compute_V_pi_from_Q, PLOT, NPRINT)
+    if (FLAG == True):
+        Q, h_ctg = dqn_learning(env, DISCOUNT, Q, Q_target, NEPISODES, MAX_EPISODE_LENGTH, LEARNING_RATE, critic_optimizer, exploration_prob, exploration_decreasing_decay, min_exploration_prob, compute_V_pi_from_Q, PLOT, NPRINT)
         
         print("\nTraining finished")
         Q.save('saved_model/my_model')

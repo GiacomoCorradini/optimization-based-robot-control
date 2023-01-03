@@ -5,6 +5,7 @@ from tensorflow.python.ops.numpy_ops import np_config
 import random as rand
 import numpy as np
 from numpy.random import randint, uniform
+from numpy import pi
 
 np_config.enable_numpy_behavior()
  
@@ -30,7 +31,19 @@ def get_critic(nx, nu):
     
     return model
 
-def update(xu_batch, cost_batch, xu_next_batch):
+
+# Continuous to discrete c2d..
+def c2dq(self, q, uMax=5, nq=51):
+    DQ = 2*pi/nq
+    q = (q+pi)%(2*pi) # q is between 0 and 2pi
+    return int(np.floor(q/DQ))  % nq
+
+def c2dv(self, v, vMax=5, nv=21):
+    DV = 2*vMax/nv
+    v = np.clip(v,-vMax+1e-3,vMax-1e-3)
+    return int(np.floor((v+vMax)/DV))
+
+def update(xu_batch, cost_batch, xu_next_batch, Q, Q_target, DISCOUNT, critic_optimizer):
     ''' Update the weights of the Q network using the specified batch of data '''
     # all inputs are tf tensors
     with tf.GradientTape() as tape:         
@@ -63,7 +76,7 @@ def get_action(exploration_prob, nu, Q, x, EGREEDY):
     return u
 
 def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
-               learningRate, exploration_prob, exploration_decreasing_decay, \
+               learningRate, critic_optimizer, exploration_prob, exploration_decreasing_decay, \
                min_exploration_prob, compute_V_pi_from_Q, plot=False, nprint=1000):
     ''' 
         DQN learning algorithm:
@@ -107,7 +120,8 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         for k in range(int(maxEpisodeLength)):
             # useful variable
             x = env.x
-      
+            print(type(env.x))
+            print(env.x)
             # epsilon-greedy action selection
             u = get_action(exploration_prob, env.nu, Q, x, True)
             
@@ -142,7 +156,7 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
                 xu_next_batch = np2tf(xu_next_batch)
 
                 # update weights
-                update(xu_batch, cost_batch, xu_next_batch)
+                update(xu_batch, cost_batch, xu_next_batch, Q, Q_target, gamma, critic_optimizer)
                
                 # Periodically update target network (period = c_step)
                 if k % c_step == 0:
@@ -151,8 +165,6 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
             # keep track of the cost to go
             J += gamma_to_the_i * cost
             gamma_to_the_i *= gamma
-
-            
         
         # calculate average cost
         J_avg = J / ep
@@ -164,45 +176,10 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         if(k%nprint==0):
             print("Q learning - Iter %d, J=%.1f, eps=%.1f"%(k,J,100*exploration_prob))
             if(plot):
-                V, pi = compute_V_pi_from_Q(env, Q)
+                x[0] = c2dq(env.x[0])
+                x[1] = c2dq(env.x[1])
+                V, pi = compute_V_pi_from_Q(env, Q, x)
                 env.plot_V_table(V)
                 env.plot_policy(pi)
     
     return Q, h_ctg
-
-nx = 2
-nu = 1
-QVALUE_LEARNING_RATE = 1e-3
-DISCOUNT = 0.99
-
-# Create critic and target NNs
-Q = get_critic(nx, nu)
-Q_target = get_critic(nx, nu)
-
-Q.summary()
-
-# Set initial weights of targets equal to those of the critic
-Q_target.set_weights(Q.get_weights())
-
-# Set optimizer specifying the learning rates
-critic_optimizer = tf.keras.optimizers.Adam(QVALUE_LEARNING_RATE)
-
-w = Q.get_weights()
-for i in range(len(w)):
-    print("Shape Q weights layer", i, w[i].shape)
-    
-for i in range(len(w)):
-    print("Norm Q weights layer", i, np.linalg.norm(w[i]))
-    
-print("\nDouble the weights")
-for i in range(len(w)):
-    w[i] *= 2
-Q.set_weights(w)
-
-w = Q.get_weights()
-for i in range(len(w)):
-    print("Norm Q weights layer", i, np.linalg.norm(w[i]))
-
-w = Q_target.get_weights()
-for i in range(len(w)):
-    print("Norm Q weights layer", i, np.linalg.norm(w[i]))
