@@ -162,8 +162,8 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         if(k%nprint==0):
             print("Q learning - Iter %d, J=%.1f, eps=%.1f"%(k,J,100*exploration_prob))
             if(plot):
-                V, pi = compute_V_pi_from_Q(Q)
-                env.plot_V_table(V)
-                env.plot_policy(pi)
+                V, pi, xgrid = compute_V_pi_from_Q(Q)
+                env.plot_V_table(V, xgrid)
+                env.plot_policy(pi, xgrid)
     
     return Q, h_ctg

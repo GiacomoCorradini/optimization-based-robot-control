@@ -31,14 +31,13 @@ class Pendulum_dci:
     @property
     def goal(self): return [0.,0.]
     
-    # Continuous to discrete c2d..
-    # def c2dq(self, q):
-    #     q = (q+pi)%(2*pi) # q is between 0 and 2pi
-    #     return int(np.floor(q/self.DQ))  % self.nq
-
-    # def c2dv(self, v):
-    #     v = np.clip(v,-self.vMax+1e-3,self.vMax-1e-3)
-    #     return int(np.floor((v+self.vMax)/self.DV))
+    # Clip state
+    def xclip(self, x):
+        # q is between 0 and 2pi
+        x[0] = (x[0]+pi)%(2*pi) 
+        #velocity bound
+        x[1] = np.clip(x[1],-self.vMax+1e-3,self.vMax-1e-3) 
+        return x
 
     def c2du(self, u):
         u = np.clip(u,-self.uMax+1e-3,self.uMax-1e-3)
@@ -90,12 +89,11 @@ class Pendulum_dci:
 
     def render(self):
         self.pendulum.render()
-        #q = self.d2cq(self.i2x(self.x)[0])
-        #self.pendulum.display(np.array([self.x[0],]))
-        #time.sleep(self.pendulum.DT)
+        self.pendulum.display(np.array([self.x[0],]))
+        time.sleep(self.pendulum.DT)
 
     def dynamics(self,iu):
-        x   = self.x
+        x   = self.xclip(self.x)
         u   = self.d2cu(iu)
         self.xc,_ = self.pendulum.dynamics(x,u)
         return self.xc
@@ -122,13 +120,3 @@ class Pendulum_dci:
         plt.ylabel("dq")
         plt.show()
         
-    def plot_Q_table(self, Q):
-        ''' Plot the given Q table '''
-        import matplotlib.pyplot as plt
-        X,U = np.meshgrid(range(Q.shape[0]),range(Q.shape[1]))
-        plt.pcolormesh(X, U, Q.T, cmap=plt.cm.get_cmap('Blues'))
-        plt.colorbar()
-        plt.title('Q table')
-        plt.xlabel("x")
-        plt.ylabel("u")
-        plt.show()

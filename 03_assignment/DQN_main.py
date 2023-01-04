@@ -74,7 +74,7 @@ if __name__=='__main__':
     exploration_prob                = 1       # initial exploration probability of eps-greedy policy
     exploration_decreasing_decay    = 0.001   # exploration decay for exponential decreasing
     min_exploration_prob            = 0.001   # minimum of exploration probability
-    FLAG                            = False   # False = Load Model
+    FLAG                            = True  # False = Load Model
 
     nx = 2 
     nu = 1
@@ -128,7 +128,7 @@ if __name__=='__main__':
     # env.plot_V_table(V_pi)
     # print("Average/min/max Value:", np.mean(V_pi), np.min(V_pi), np.max(V_pi)) 
         
-    # render_greedy_policy(env, Q, DISCOUNT)
-    # plt.plot( np.cumsum(h_ctg)/range(1,NEPISODES+1) )
-    # plt.title ("Average cost-to-go")
-    # plt.show()
+    render_greedy_policy(env, Q, DISCOUNT)
+    plt.plot( np.cumsum(h_ctg)/range(1,NEPISODES+1) )
+    plt.title ("Average cost-to-go")
+    plt.show()
