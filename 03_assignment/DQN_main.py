@@ -44,6 +44,8 @@ def compute_V_pi_from_Q(Q, vMax=5, xstep=20, nx=2):
             pi[i,j] = tf2np(action_values[best_action_index])
             V[i,j]  = tf2np(tf.keras.backend.min(action_values))
 
+    return V, pi, x
+    
     # pi[x] = np.argmin(Q[x,:])
         # Rather than simply using argmin we do something slightly more complex
         # to ensure simmetry of the policy when multiply control inputs
@@ -56,7 +58,6 @@ def compute_V_pi_from_Q(Q, vMax=5, xstep=20, nx=2):
     #     pi = u_best[0]
     # else:
     #     pi = u_best[int(u_best.shape[0]/2)]
-    return V, pi, x
 
 if __name__=='__main__':
     ### --- Random seed
@@ -74,7 +75,7 @@ if __name__=='__main__':
     exploration_prob                = 1       # initial exploration probability of eps-greedy policy
     exploration_decreasing_decay    = 0.05    # exploration decay for exponential decreasing
     min_exploration_prob            = 0.001   # minimum of exploration probability
-    FLAG                            = True  # False = Load Model
+    FLAG                            = False  # False = Load Model
 
     nx = 2 
     nu = 1
@@ -129,9 +130,9 @@ if __name__=='__main__':
     # env.plot_V_table(V_pi)
     # print("Average/min/max Value:", np.mean(V_pi), np.min(V_pi), np.max(V_pi)) 
         
-    #render_greedy_policy(env, Q, DISCOUNT)
+    render_greedy_policy(env, Q, DISCOUNT)
     plt.figure()
-    plt.plot( np.cumsum(h_ctg)/range(1,NEPISODES+1) )
+    #plt.plot( np.cumsum(h_ctg)/range(1,NEPISODES+1) )
     plt.title ("Average cost-to-go")
 
     plt.show()
