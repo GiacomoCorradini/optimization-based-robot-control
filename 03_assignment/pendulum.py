@@ -186,3 +186,4 @@ class Pendulum:
         q = self.x[:self.nq]
         self.display(q)
         time.sleep(self.DT)
+ 
