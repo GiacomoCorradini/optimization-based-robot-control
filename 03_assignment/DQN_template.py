@@ -5,7 +5,6 @@ from tensorflow.python.ops.numpy_ops import np_config
 import random as rand
 import numpy as np
 from numpy.random import randint, uniform
-from numpy import pi
 
 np_config.enable_numpy_behavior()
  
@@ -30,18 +29,6 @@ def get_critic(nx, nu):
     model = tf.keras.Model(inputs, outputs)                       # create the NN
     
     return model
-
-
-# Continuous to discrete c2d..
-def c2dq(self, q, uMax=5, nq=51):
-    DQ = 2*pi/nq
-    q = (q+pi)%(2*pi) # q is between 0 and 2pi
-    return int(np.floor(q/DQ))  % nq
-
-def c2dv(self, v, vMax=5, nv=21):
-    DV = 2*vMax/nv
-    v = np.clip(v,-vMax+1e-3,vMax-1e-3)
-    return int(np.floor((v+vMax)/DV))
 
 def update(xu_batch, cost_batch, xu_next_batch, Q, Q_target, DISCOUNT, critic_optimizer):
     ''' Update the weights of the Q network using the specified batch of data '''
@@ -118,18 +105,18 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         gamma_to_the_i = 1
         # simulate the system for maxEpisodeLength steps
         for k in range(int(maxEpisodeLength)):
-            # useful variable
+            # state
             x = env.x
-            print(type(env.x))
-            print(env.x)
+         
             # epsilon-greedy action selection
             u = get_action(exploration_prob, env.nu, Q, x, True)
             
             # observe cost and next state (step = calculate dynamics)
             x_next, cost = env.step(u)
+            # next control greedy
             u_next = get_action(exploration_prob, env.nu, Q, x_next, False)
         
-            # store the experience (s,a,r,s') in the replay_buffer
+            # store the experience (s,a,r,s',a') in the replay_buffer
             experience = [x, u, cost, x_next, u_next]
             replay_buffer.append(experience)
             # check the length of the replay_buffer and resize it if it's bigger than capacity_buffer
@@ -155,10 +142,10 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
                 cost_batch = np2tf(cost_batch)
                 xu_next_batch = np2tf(xu_next_batch)
 
-                # update weights
+                # ptimizer with SGD
                 update(xu_batch, cost_batch, xu_next_batch, Q, Q_target, gamma, critic_optimizer)
                
-                # Periodically update target network (period = c_step)
+                # Periodically update weights (period = c_step)
                 if k % c_step == 0:
                     Q_target.set_weights(Q.get_weights())
                 
@@ -176,9 +163,7 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         if(k%nprint==0):
             print("Q learning - Iter %d, J=%.1f, eps=%.1f"%(k,J,100*exploration_prob))
             if(plot):
-                x[0] = c2dq(env.x[0])
-                x[1] = c2dq(env.x[1])
-                V, pi = compute_V_pi_from_Q(env, Q, x)
+                V, pi = compute_V_pi_from_Q(Q)
                 env.plot_V_table(V)
                 env.plot_policy(pi)
     

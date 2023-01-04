@@ -25,14 +25,24 @@ def render_greedy_policy(env, Q, gamma, x0=None, maxiter=20):
         env.render()
     print("Real cost to go of state", x0, ":", costToGo)
 
-def compute_V_pi_from_Q(env, Q, x):
+
+def compute_V_pi_from_Q(Q, vMax=5, xstep=20, nx=2):
     ''' Compute Value table and greedy policy pi from Q table. '''
 
-    action_values = Q.predict(x)
-    best_action_index = tf.argmin(action_values)
-    pi = tf2np(action_values[best_action_index])
+    x = np.zeros([nx,xstep+1])
+    DQ = 2*np.pi/xstep
+    DV = 2*vMax/xstep
+    x[0] = np.arange(-np.pi,np.pi+DQ, DQ)
+    x[1] = np.arange(-vMax, vMax+DV, DV)
     
-    V = tf2np(tf.keras.backend.min(Q))
+    for i in range(np.shape(x)[1]):
+        action_values = Q.predict()
+        best_action_index = tf.argmin(action_values)
+        pi[i] = tf2np(action_values[best_action_index])
+    
+        V[i]  = tf2np(tf.math.min(action_values))
+    print(V)
+    print(pi)
     # pi[x] = np.argmin(Q[x,:])
         # Rather than simply using argmin we do something slightly more complex
         # to ensure simmetry of the policy when multiply control inputs
@@ -64,7 +74,7 @@ if __name__=='__main__':
     exploration_prob                = 1       # initial exploration probability of eps-greedy policy
     exploration_decreasing_decay    = 0.001   # exploration decay for exponential decreasing
     min_exploration_prob            = 0.001   # minimum of exploration probability
-    FLAG                            = True    # False = Load Model
+    FLAG                            = False    # False = Load Model
 
     nx = 2 
     nu = 1
@@ -104,8 +114,9 @@ if __name__=='__main__':
 
     if FLAG == False:
         Q = tf.keras.models.load_model('saved_model/my_model')
-
-    V, pi = compute_V_pi_from_Q(env,Q)
+        assert(Q)
+   
+    V, pi = compute_V_pi_from_Q(Q)
     env.plot_V_table(V)
     env.plot_policy(pi)
     print("Average/min/max Value:", np.mean(V), np.min(V), np.max(V)) 
