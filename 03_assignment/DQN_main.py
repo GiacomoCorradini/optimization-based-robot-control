@@ -56,7 +56,7 @@ def compute_V_pi_from_Q(Q, vMax=5, xstep=20, nx=2):
     #     pi = u_best[0]
     # else:
     #     pi = u_best[int(u_best.shape[0]/2)]
-    return V, pi
+    return V, pi, x
 
 if __name__=='__main__':
     ### --- Random seed
@@ -116,9 +116,9 @@ if __name__=='__main__':
         Q = tf.keras.models.load_model('saved_model/my_model')
         assert(Q)
    
-    V, pi = compute_V_pi_from_Q(Q)
-    env.plot_V_table(V)
-    env.plot_policy(pi)
+    V, pi, xgrid = compute_V_pi_from_Q(Q)
+    env.plot_V_table(V, xgrid)
+    env.plot_policy(pi, xgrid)
     print("Average/min/max Value:", np.mean(V), np.min(V), np.max(V)) 
     
     # print("Compute real Value function of greedy policy")
