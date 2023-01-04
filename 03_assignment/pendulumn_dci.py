@@ -11,16 +11,20 @@ class Pendulum_dci:
         Guassian noise can be added in the dynamics. 
         Cost is -1 if the goal state has been reached, zero otherwise.
     '''
-    def __init__(self, nu=11, vMax=5, uMax=5, dt=0.2, ndt=1, noise_stddev=0.0):
+    def __init__(self, nq=21, nv=21, nu=11, vMax=5, uMax=5, dt=0.2, ndt=1, noise_stddev=0):
         self.pendulum = Pendulum(1,noise_stddev)
         self.pendulum.DT  = dt    # Time step length
         self.pendulum.NDT = ndt   # Number of Euler steps per integration (internal)
-        self.nu = nu              # Number of discretization steps for joint torque
+        self.nq = nq        # Number of discretization steps for joint angle
+        self.nv = nv        # Number of discretization steps for joint velocity
+        self.nu = nu        # Number of discretization steps for joint torque
                                   # the value above must be odd
         self.vMax = vMax          # Max velocity (v in [-vmax,vmax])
         self.uMax = uMax          # Max torque (u in [-umax,umax])
         self.dt = dt              # time step
         self.DU = 2*uMax/nu       # discretization resolution for joint torque
+        self.DQ = 2*pi/nq   # discretization resolution for joint angle
+        self.DV = 2*vMax/nv # discretization resolution for joint velocity
 
     # @property
     # def nqv(self): return [self.nq,self.nv]
@@ -28,9 +32,12 @@ class Pendulum_dci:
     # def nx(self): return self.nq*self.nv
     
     # vertical position
-    @property
-    def goal(self): return [0.,0.]
-    
+  
+    def goal(self, x):
+        goal_ = False
+        if (x[0] > 2*pi - 0.1 or x[0] < 0.1) and abs(x[1]) < 0.5: goal_ = True
+        return goal_
+
     # Clip state
     def xclip(self, x):
         # q is between 0 and 2pi
@@ -55,14 +62,14 @@ class Pendulum_dci:
     #     '''
     #     return np.array([self.c2dq(qv[0]), self.c2dv(qv[1])])
 
-    # Discrete to continuous
-    # def d2cq(self, iq):
-    #     iq = np.clip(iq,0,self.nq-1)
-    #     return iq*self.DQ - pi + 0.5*self.DQ
+    #Discrete to continuous
+    def d2cq(self, iq):
+        iq = np.clip(iq,0,self.nq-1)
+        return iq*self.DQ - pi + 0.5*self.DQ
     
-    # def d2cv(self, iv):
-    #     iv = np.clip(iv,0,self.nv-1) - (self.nv-1)/2
-    #     return iv*self.DV
+    def d2cv(self, iv):
+        iv = np.clip(iv,0,self.nv-1) - (self.nv-1)/2
+        return iv*self.DV
     
     # def d2c(self, iqv):
     #     '''From 2d discrete to continuous'''
@@ -83,7 +90,7 @@ class Pendulum_dci:
 
     def step(self,iu):
         ''' Simulate one time step '''
-        cost     = -1 if self.x[0]==self.goal[0] and self.x[1]==self.goal[1] else 0
+        cost     = -1 if self.goal(self.x) else 0
         self.x   = self.dynamics(iu)
         return self.x, cost
 
@@ -93,17 +100,16 @@ class Pendulum_dci:
         time.sleep(self.pendulum.DT)
 
     def dynamics(self,iu):
-        x   = self.xclip(self.x)
+        x   = self.x
         u   = self.d2cu(iu)
         self.xc,_ = self.pendulum.dynamics(x,u)
-        return self.xc
+        return self.xclip(self.xc)
     
     def plot_V_table(self, V, x, i=0):
         ''' Plot the given Value table V '''
         import matplotlib.pyplot as plt
         plt.figure()
-        Q,DQ = np.meshgrid(x[0],x[1])
-        plt.pcolormesh(Q, DQ, V.T, cmap=plt.cm.get_cmap('Blues'))
+        plt.pcolormesh(x[0], x[1], V, cmap=plt.cm.get_cmap('Blues'))
         plt.colorbar()
         plt.title("V table %d" %i)
         plt.xlabel("q")
@@ -114,8 +120,7 @@ class Pendulum_dci:
         ''' Plot the given policy table pi '''
         import matplotlib.pyplot as plt
         plt.figure()
-        Q,DQ = np.meshgrid(x[0],x[1])
-        plt.pcolormesh(Q, DQ, pi.T, cmap=plt.cm.get_cmap('RdBu'))
+        plt.pcolormesh(x[0], x[1], pi, cmap=plt.cm.get_cmap('RdBu'))
         plt.colorbar()
         plt.title("Policy %d" %i)
         plt.xlabel("q")

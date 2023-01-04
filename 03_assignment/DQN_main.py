@@ -72,7 +72,7 @@ if __name__=='__main__':
     DISCOUNT                        = 0.99    # Discount factor 
     PLOT                            = True    # Plot stuff if True
     exploration_prob                = 1       # initial exploration probability of eps-greedy policy
-    exploration_decreasing_decay    = 0.001   # exploration decay for exponential decreasing
+    exploration_decreasing_decay    = 0.05    # exploration decay for exponential decreasing
     min_exploration_prob            = 0.001   # minimum of exploration probability
     FLAG                            = True  # False = Load Model
 
@@ -96,7 +96,8 @@ if __name__=='__main__':
 
     ### --- Environment
     nd_u = 11                 # number of discretization steps for the joint torque u
-    env  = Pendulum_dci(nd_u) # enviroment with continuous state and discrete control input
+    nd_x = 21
+    env  = Pendulum_dci(nd_x,nd_x,nd_u) # enviroment with continuous state and discrete control input
     
     if (FLAG == True):
         Q, h_ctg = dqn_learning(env, DISCOUNT, Q, Q_target, NEPISODES, MAX_EPISODE_LENGTH, LEARNING_RATE, critic_optimizer, exploration_prob, exploration_decreasing_decay, min_exploration_prob, compute_V_pi_from_Q, PLOT, NPRINT)
@@ -128,7 +129,9 @@ if __name__=='__main__':
     # env.plot_V_table(V_pi)
     # print("Average/min/max Value:", np.mean(V_pi), np.min(V_pi), np.max(V_pi)) 
         
-    render_greedy_policy(env, Q, DISCOUNT)
+    #render_greedy_policy(env, Q, DISCOUNT)
+    plt.figure()
     plt.plot( np.cumsum(h_ctg)/range(1,NEPISODES+1) )
     plt.title ("Average cost-to-go")
+
     plt.show()
