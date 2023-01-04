@@ -29,20 +29,21 @@ def render_greedy_policy(env, Q, gamma, x0=None, maxiter=20):
 def compute_V_pi_from_Q(Q, vMax=5, xstep=20, nx=2):
     ''' Compute Value table and greedy policy pi from Q table. '''
 
-    x = np.zeros([nx,xstep+1])
+    x = np.empty(shape = (nx,xstep+1))
     DQ = 2*np.pi/xstep
     DV = 2*vMax/xstep
-    x[0] = np.arange(-np.pi,np.pi+DQ, DQ)
-    x[1] = np.arange(-vMax, vMax+DV, DV)
-    
+    x[0,:] = np.arange(-np.pi,np.pi+DQ, DQ)
+    x[1,:] = np.arange(-vMax, vMax+DV, DV)
+    pi = np.empty(shape = (xstep+1,xstep+1))
+    V = np.empty(shape = (xstep+1,xstep+1))
+
     for i in range(np.shape(x)[1]):
-        action_values = Q.predict()
-        best_action_index = tf.argmin(action_values)
-        pi[i] = tf2np(action_values[best_action_index])
-    
-        V[i]  = tf2np(tf.math.min(action_values))
-    print(V)
-    print(pi)
+        for j in range(np.shape(x)[1]):
+            action_values = Q.predict([[x[0,i]],[x[1,j]]])
+            best_action_index = tf.argmin(action_values)
+            pi[i,j] = tf2np(action_values[best_action_index])
+            V[i,j]  = tf2np(tf.keras.backend.min(action_values))
+
     # pi[x] = np.argmin(Q[x,:])
         # Rather than simply using argmin we do something slightly more complex
         # to ensure simmetry of the policy when multiply control inputs
@@ -55,7 +56,6 @@ def compute_V_pi_from_Q(Q, vMax=5, xstep=20, nx=2):
     #     pi = u_best[0]
     # else:
     #     pi = u_best[int(u_best.shape[0]/2)]
-
     return V, pi
 
 if __name__=='__main__':
@@ -74,7 +74,7 @@ if __name__=='__main__':
     exploration_prob                = 1       # initial exploration probability of eps-greedy policy
     exploration_decreasing_decay    = 0.001   # exploration decay for exponential decreasing
     min_exploration_prob            = 0.001   # minimum of exploration probability
-    FLAG                            = False    # False = Load Model
+    FLAG                            = False   # False = Load Model
 
     nx = 2 
     nu = 1

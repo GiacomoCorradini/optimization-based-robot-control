@@ -107,7 +107,6 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         for k in range(int(maxEpisodeLength)):
             # state
             x = env.x
-         
             # epsilon-greedy action selection
             u = get_action(exploration_prob, env.nu, Q, x, True)
             
