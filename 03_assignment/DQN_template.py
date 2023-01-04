@@ -5,6 +5,7 @@ from tensorflow.python.ops.numpy_ops import np_config
 import random as rand
 import numpy as np
 from numpy.random import randint, uniform
+import matplotlib as plt
 
 np_config.enable_numpy_behavior()
  
@@ -88,6 +89,10 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
     batch_size = 32
     # Keep track of the cost-to-go history (for plot)
     h_ctg = []
+    i_fin      = np.zeros(int(nEpisodes/nprint))
+    J_fin      = np.zeros(int(nEpisodes/nprint))
+    eps_fin    = np.zeros(int(nEpisodes/nprint))
+
     # Make a copy of the initial Q function
     Q = tf.keras.models.clone_model(Q)
 
@@ -95,6 +100,7 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
     c_step = 4
     # count the n° of episodes
     ep = 0
+    
 
     # for every episode
     for i in range(nEpisodes):
@@ -159,11 +165,18 @@ def dqn_learning(env, gamma, Q, Q_target, nEpisodes, maxEpisodeLength, \
         # update the exploration probability with an exponential decay: 
         exploration_prob = max(np.exp(-exploration_decreasing_decay*ep), min_exploration_prob)
         # use the function compute_V_pi_from_Q(env, Q) to compute and plot V and pi
-        if(k%nprint==0):
-            print("Q learning - Iter %d, J=%.1f, eps=%.1f"%(k,J,100*exploration_prob))
+        if(i%nprint==0):
+            print("Q learning - Iter %d, J=%.1f, eps=%.1f"%(i,J,100*exploration_prob))
+            iaux = int(i/nprint)
+            i_fin[iaux]   = i
+            J_fin[iaux]   = J
+            eps_fin[iaux] = exploration_prob
             if(plot):
                 V, pi, xgrid = compute_V_pi_from_Q(Q)
-                env.plot_V_table(V, xgrid)
-                env.plot_policy(pi, xgrid)
-    
+                env.plot_V_table(V, xgrid, iaux)
+                env.plot_policy(pi, xgrid, iaux)
+
+    for i in range(int(nEpisodes/nprint)):
+        print("Q learning - Iter %d, J=%.1f, eps=%.1f"%(i_fin[i],J_fin[i],100*eps_fin[i]))
+        
     return Q, h_ctg

@@ -98,25 +98,27 @@ class Pendulum_dci:
         self.xc,_ = self.pendulum.dynamics(x,u)
         return self.xc
     
-    def plot_V_table(self, V, x):
+    def plot_V_table(self, V, x, i=0):
         ''' Plot the given Value table V '''
         import matplotlib.pyplot as plt
+        plt.figure()
         Q,DQ = np.meshgrid(x[0],x[1])
         plt.pcolormesh(Q, DQ, V.T, cmap=plt.cm.get_cmap('Blues'))
         plt.colorbar()
-        plt.title('V table')
+        plt.title("V table %d" %i)
         plt.xlabel("q")
         plt.ylabel("dq")
-        plt.show()
+        plt.show(block=False)
         
-    def plot_policy(self, pi, x):
+    def plot_policy(self, pi, x, i=0):
         ''' Plot the given policy table pi '''
         import matplotlib.pyplot as plt
+        plt.figure()
         Q,DQ = np.meshgrid(x[0],x[1])
         plt.pcolormesh(Q, DQ, pi.T, cmap=plt.cm.get_cmap('RdBu'))
         plt.colorbar()
-        plt.title('Policy')
+        plt.title("Policy %d" %i)
         plt.xlabel("q")
         plt.ylabel("dq")
-        plt.show()
+        plt.show(block=False)
         
