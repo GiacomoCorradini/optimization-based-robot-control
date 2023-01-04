@@ -185,4 +185,4 @@ class Pendulum:
     def render(self):
         q = self.x[:self.nq]
         self.display(q)
-        time.sleep(self.DT/10)
+        time.sleep(self.DT)
