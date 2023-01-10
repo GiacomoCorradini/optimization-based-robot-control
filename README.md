@@ -3,7 +3,7 @@
 Open the terminal and execute the following commands:
 
 ```
-sudo apt install terminator python3-numpy python3-scipy python3-matplotlib spyder3 curl
+sudo apt install python3-numpy python3-scipy python3-matplotlib curl
 
 sudo sh -c "echo 'deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -sc) robotpkg' >> /etc/apt/sources.list.d/robotpkg.list"
 
